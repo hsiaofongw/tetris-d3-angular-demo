@@ -1,14 +1,16 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-
-type NameCount = { name: string; count: number };
+import { fromEvent, Subscription } from 'rxjs';
+import * as uuid from 'uuid';
 
 type Point = { offsetX: number; offsetY: number };
+type Shape = Point[];
+type Cell = { id: string; point: Point };
 type Block = {
-  id: number;
+  id: string;
   offsetX: number;
   offsetY: number;
-  data: Array<Point>;
+  cells: Cell[];
 };
 
 type BoundingBox = {
@@ -18,6 +20,11 @@ type BoundingBox = {
   maxY: number;
   width: number;
   height: number;
+};
+
+type BlockMove = {
+  direction: 'up' | 'left' | 'right' | 'down';
+  steps: number;
 };
 
 @Component({
@@ -32,12 +39,52 @@ export class AppComponent {
   rowPercentage = (1 / this.nRows) * 100;
 
   @ViewChild('svgElement', { read: ElementRef })
-  svgElementRef!: ElementRef<HTMLElement>;
+  _svgElementRef!: ElementRef<HTMLElement>;
 
-  _data: Block[] = [];
+  _cells: Cell[] = [];
 
-  getRandomBlockData(): Block['data'] {
-    const candidateBlockDatas: Array<Block['data']> = [
+  _activeBlock?: Block;
+
+  _keyUpSubscription?: Subscription;
+
+  _keyUpProcedure: { [key: string]: () => void } = {};
+
+  ngOnInit(): void {
+    this._keyUpSubscription = fromEvent(document, 'keyup').subscribe(e => {
+      if (e instanceof KeyboardEvent) {
+        this._handleKeyUp(e.key);
+      }
+    });
+
+    this._registerKeyUpProcedure('s', () => this._handleSKeyUp());
+    this._registerKeyUpProcedure('a', () => this._handleAKeyUp());
+    this._registerKeyUpProcedure('d', () => this._handleDKeyUp());
+  }
+
+  _handleSKeyUp(): void {
+    if (this._activeBlock) {
+      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1});
+    }
+  }
+
+  _handleAKeyUp(): void {
+    if (this._activeBlock) {
+      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1});
+    }
+  }
+
+  _handleDKeyUp(): void {
+    if (this._activeBlock) {
+      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1});
+    }
+  }
+
+  private _registerKeyUpProcedure(key: string, fn: () => void): void {
+    this._keyUpProcedure[key] = fn;
+  }
+
+  private _getShapes(): Shape[] {
+    const candidateShapes: Shape[] = [
       [
         { offsetX: 0, offsetY: 0 },
         { offsetX: 1, offsetY: 0 },
@@ -52,14 +99,18 @@ export class AppComponent {
       ],
     ];
 
-    const nCandidates = candidateBlockDatas.length;
-    const choose = d3.randomInt(0, nCandidates);
-    return candidateBlockDatas[choose()];
+    return candidateShapes;
   }
 
-  getBoundingBoxFromBlockData(blockData: Block['data']): BoundingBox {
-    const xOffsets = blockData.map((point) => point.offsetX);
-    const yOffsets = blockData.map((point) => point.offsetY);
+  private _getRandomShape(): Shape {
+    const shapes = this._getShapes();
+    const choose = d3.randomInt(0, shapes.length);
+    return shapes[choose()];
+  }
+
+  private _getBoundingBox(shape: Shape): BoundingBox {
+    const xOffsets = shape.map((point) => point.offsetX);
+    const yOffsets = shape.map((point) => point.offsetY);
     const minX = Math.min(...xOffsets);
     const maxX = Math.max(...xOffsets);
     const minY = Math.min(...yOffsets);
@@ -67,41 +118,99 @@ export class AppComponent {
     return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
   }
 
-  addNew(): void {
-    const randomBlockData = this.getRandomBlockData();
-    const blockId = this._data.length;
-    const blockWidth = this.getBoundingBoxFromBlockData(randomBlockData).width;
+  private _d3Update(): void {
+    d3.select(this._svgElementRef.nativeElement)
+      .selectAll('rect')
+      .data(this._cells)
+      .join(
+        (enter) =>
+          enter
+            .append('rect')
+            .attr('fill', '#FFF')
+            .attr('stroke', '#000')
+            .attr('x', (d) => `${d.point.offsetX * this.colPercentage}%`)
+            .attr('y', (d) => `${d.point.offsetY * this.rowPercentage}%`)
+            .attr('width', this.colPercentage + '%')
+            .attr('height', this.rowPercentage + '%'),
+        (update) =>
+          update
+            .attr('x', (d) => `${d.point.offsetX * this.colPercentage}%`)
+            .attr('y', (d) => `${d.point.offsetY * this.rowPercentage}%`),
+        (exit) => exit.remove()
+      );
+  }
+
+  _getRandomBlock() {
+    const shape = this._getRandomShape();
+    const blockId = uuid.v4();
+    const blockBoundingBox = this._getBoundingBox(shape);
+    const blockWidth = blockBoundingBox.width;
     const maximumAllowXOffset = this.nCols - blockWidth;
-    const blockOffsetX = d3.randomInt(0, maximumAllowXOffset + 1)();
+    const getBlockOffsetX = d3.randomInt(0, maximumAllowXOffset);
+    const blockOffsetX = getBlockOffsetX();
 
-    randomBlockData.forEach((point) => {
-      point.offsetX = point.offsetX + blockOffsetX;
-    });
-
-    this._data.push({
+    const block: Block = {
       id: blockId,
       offsetX: blockOffsetX,
       offsetY: 0,
-      data: randomBlockData,
+      cells: shape.map((point) => ({ id: uuid.v4(), point: point })),
+    };
+
+    return block;
+  }
+
+  _addRandomBlockToScreen(): void {
+    const block = this._getRandomBlock();
+    block.cells.forEach(
+      (cell) => (cell.point.offsetX = block.offsetX + cell.point.offsetX)
+    );
+    block.cells.forEach((cell) => this._cells.push(cell));
+    this._d3Update();
+    this._activeBlock = block;
+  }
+
+  _moveBlock(block: Block, move: BlockMove): void {
+    block.cells.forEach((cell) => {
+      if (move.direction === 'down') {
+        this._pointDown(cell.point, move.steps);
+      }
+
+      if (move.direction === 'right') {
+        this._pointRight(cell.point, move.steps);
+      }
+
+      if (move.direction === 'left') {
+        this._pointLeft(cell.point, move.steps);
+      }
+
+      if (move.direction === 'up') {
+        this._pointUp(cell.point, move.steps);
+      }
     });
 
-    d3.select(this.svgElementRef.nativeElement)
-      .selectAll('g')
-      .data(this._data)
-      .enter()
-      .append('g')
-      .attr('id', (d) => d.id)
-      .selectAll('rect')
-      .data((d) => d.data)
-      .enter()
-      .append('rect')
-      .attr('width', `${this.colPercentage}%`)
-      .attr('height', `${this.rowPercentage}%`)
-      .attr('offsetX', (d) => d.offsetX)
-      .attr('offsetY', (d) => d.offsetY)
-      .attr('x', (d) => `${d.offsetX * this.colPercentage}%`)
-      .attr('y', (d) => `${d.offsetY * this.rowPercentage}%`)
-      .attr('stroke', '#000')
-      .attr('fill', '#FFF');
+    this._d3Update();
+  }
+
+  _pointRight(point: Point, steps: number): void {
+    point.offsetX = point.offsetX + steps;
+  }
+
+  _pointDown(point: Point, steps: number): void {
+    point.offsetY = point.offsetY + steps;
+  }
+
+  _pointLeft(point: Point, steps: number): void {
+    point.offsetX = point.offsetX - steps;
+  }
+
+  _pointUp(point: Point, steps: number): void {
+    point.offsetY = point.offsetY - steps;
+  }
+
+  _handleKeyUp(key: string): void {
+    const fn = this._keyUpProcedure[key];
+    if (fn !== undefined) {
+      fn();
+    }
   }
 }
