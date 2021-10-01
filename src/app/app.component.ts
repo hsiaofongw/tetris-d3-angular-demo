@@ -5,7 +5,7 @@ import * as uuid from 'uuid';
 
 type Point = { offsetX: number; offsetY: number };
 type Shape = Point[];
-type Cell = { id: string; point: Point };
+type Cell = { id: string; point: Point; blockId?: string };
 type Block = {
   id: string;
   offsetX: number;
@@ -90,9 +90,7 @@ export class AppComponent {
   }
 
   _handleSKeyUp(): void {
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1 });
-    }
+    this._activeBlockMoveOneStep();
   }
 
   _handleAKeyUp(): void {
@@ -206,6 +204,8 @@ export class AppComponent {
       cells: shape.map((point) => ({ id: uuid.v4(), point: point })),
     };
 
+    block.cells.forEach((cell) => (cell.blockId = blockId));
+
     return block;
   }
 
@@ -264,16 +264,40 @@ export class AppComponent {
     }
   }
 
-  _activeBlockMoveOneStep(): void {
-    if (this._activeBlock) {
-      const cells = this._activeBlock.cells;
-      const box = this._getBoundingBox(cells.map((cell) => cell.point));
-      console.log({box});
-      if (box.maxY === this.nRows - 1) {
-        this._activeBlock = undefined;
-        return;
-      }
+  _hasBarrierInBottom(): boolean {
+    if (!this._activeBlock) {
+      return false;
+    }
 
+    const cells = this._activeBlock.cells;
+    const box = this._getBoundingBox(cells.map((cell) => cell.point));
+
+    for (const cell of cells) {
+      for (const _cell of this._cells) {
+        if (
+          _cell.blockId !== this._activeBlock.id &&
+          _cell.point.offsetX === cell.point.offsetX &&
+          _cell.point.offsetY === cell.point.offsetY + 1
+        ) {
+          return true;
+        }
+      }
+    }
+
+    if (box.maxY === this.nRows - 1) {
+      return true;
+    }
+
+    return false;
+  }
+
+  _activeBlockMoveOneStep(): void {
+    if (this._hasBarrierInBottom()) {
+      this._activeBlock = undefined;
+      return;
+    }
+
+    if (this._activeBlock) {
       this._moveBlock(this._activeBlock, { direction: 'down', steps: 1 });
     }
   }
