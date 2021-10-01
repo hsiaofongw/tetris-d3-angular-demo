@@ -37,6 +37,7 @@ export class AppComponent {
   nRows = 20;
   colPercentage = (1 / this.nCols) * 100;
   rowPercentage = (1 / this.nRows) * 100;
+  tickPeriodMs = 500;
 
   @ViewChild('svgElement', { read: ElementRef })
   _svgElementRef!: ElementRef<HTMLElement>;
@@ -49,8 +50,10 @@ export class AppComponent {
 
   _keyUpProcedure: { [key: string]: () => void } = {};
 
+  _tickTimer?: number;
+
   ngOnInit(): void {
-    this._keyUpSubscription = fromEvent(document, 'keyup').subscribe(e => {
+    this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
       if (e instanceof KeyboardEvent) {
         this._handleKeyUp(e.key);
       }
@@ -59,23 +62,48 @@ export class AppComponent {
     this._registerKeyUpProcedure('s', () => this._handleSKeyUp());
     this._registerKeyUpProcedure('a', () => this._handleAKeyUp());
     this._registerKeyUpProcedure('d', () => this._handleDKeyUp());
+
+    this._startTicking();
+  }
+
+  _startTicking(): void {
+    const tick = () => {
+      this._doItOnTick();
+      this._tickTimer = window.setTimeout(() => tick(), this.tickPeriodMs);
+    };
+
+    this._tickTimer = window.setTimeout(() => tick(), this.tickPeriodMs);
+  }
+
+  _doItOnTick(): void {
+    this._activeBlockMoveOneStep();
+
+    if (this._activeBlock === undefined) {
+      this._addRandomBlockToScreen();
+    }
+  }
+
+  _stopTicking(): void {
+    if (this._tickTimer) {
+      window.clearTimeout(this._tickTimer);
+    }
   }
 
   _handleSKeyUp(): void {
     if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1});
+      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1 });
     }
   }
 
   _handleAKeyUp(): void {
     if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1});
+      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1 });
     }
   }
 
   _handleDKeyUp(): void {
     if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1});
+      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1 });
     }
   }
 
@@ -84,20 +112,42 @@ export class AppComponent {
   }
 
   private _getShapes(): Shape[] {
-    const candidateShapes: Shape[] = [
-      [
-        { offsetX: 0, offsetY: 0 },
-        { offsetX: 1, offsetY: 0 },
-        { offsetX: 2, offsetY: 0 },
-        { offsetX: 3, offsetY: 0 },
-      ],
-      [
-        { offsetX: 0, offsetY: 0 },
-        { offsetX: 1, offsetY: 0 },
-        { offsetX: 0, offsetY: 1 },
-        { offsetX: 1, offsetY: 1 },
-      ],
+    const straight: Shape = [
+      { offsetX: 0, offsetY: 0 },
+      { offsetX: 1, offsetY: 0 },
+      { offsetX: 2, offsetY: 0 },
+      { offsetX: 3, offsetY: 0 },
     ];
+
+    const square: Shape = [
+      { offsetX: 0, offsetY: 0 },
+      { offsetX: 1, offsetY: 0 },
+      { offsetX: 0, offsetY: 1 },
+      { offsetX: 1, offsetY: 1 },
+    ];
+
+    const tMinus: Shape = [
+      { offsetX: 0, offsetY: 0 },
+      { offsetX: 1, offsetY: 0 },
+      { offsetX: 2, offsetY: 0 },
+      { offsetX: 1, offsetY: 1 },
+    ];
+
+    const lMinus: Shape = [
+      { offsetX: 0, offsetY: 0 },
+      { offsetX: 0, offsetY: 1 },
+      { offsetX: 0, offsetY: 2 },
+      { offsetX: 1, offsetY: 2 },
+    ];
+
+    const skew: Shape = [
+      { offsetX: 0, offsetY: 1 },
+      { offsetX: 1, offsetY: 1 },
+      { offsetX: 1, offsetY: 0 },
+      { offsetX: 2, offsetY: 0 },
+    ];
+
+    const candidateShapes: Shape[] = [straight, square, tMinus, lMinus, skew];
 
     return candidateShapes;
   }
@@ -114,7 +164,7 @@ export class AppComponent {
     const minX = Math.min(...xOffsets);
     const maxX = Math.max(...xOffsets);
     const minY = Math.min(...yOffsets);
-    const maxY = Math.min(...yOffsets);
+    const maxY = Math.max(...yOffsets);
     return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
   }
 
@@ -212,5 +262,23 @@ export class AppComponent {
     if (fn !== undefined) {
       fn();
     }
+  }
+
+  _activeBlockMoveOneStep(): void {
+    if (this._activeBlock) {
+      const cells = this._activeBlock.cells;
+      const box = this._getBoundingBox(cells.map((cell) => cell.point));
+      console.log({box});
+      if (box.maxY === this.nRows - 1) {
+        this._activeBlock = undefined;
+        return;
+      }
+
+      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1 });
+    }
+  }
+
+  ngOnDestroy(): void {
+    this._stopTicking();
   }
 }
