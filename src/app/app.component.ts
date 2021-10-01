@@ -94,15 +94,11 @@ export class AppComponent {
   }
 
   _handleAKeyUp(): void {
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1 });
-    }
+    this._activeBlockMoveOneLeftStep();
   }
 
   _handleDKeyUp(): void {
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1 });
-    }
+    this._activeBlockMoveOneRightStep();
   }
 
   private _registerKeyUpProcedure(key: string, fn: () => void): void {
@@ -264,6 +260,62 @@ export class AppComponent {
     }
   }
 
+  _hasBarrierInLeft(): boolean {
+    if (!this._activeBlock) {
+      return false;
+    }
+
+    const cells = this._activeBlock.cells;
+    const box = this._getBoundingBox(cells.map((cell) => cell.point));
+
+    if (box.minX === 0) {
+      return true;
+    }
+
+    const blockId = this._activeBlock.id;
+    const otherCells = this._cells.filter((_cell) => _cell.blockId !== blockId);
+    for (const cell of cells) {
+      for (const _cell of otherCells) {
+        if (
+          _cell.point.offsetX === cell.point.offsetX - 1 &&
+          _cell.point.offsetY === cell.point.offsetY
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  _hasBarrierInRight(): boolean {
+    if (!this._activeBlock) {
+      return false;
+    }
+
+    const cells = this._activeBlock.cells;
+    const box = this._getBoundingBox(cells.map((cell) => cell.point));
+
+    if (box.maxX === this.nCols - 1) {
+      return true;
+    }
+
+    const blockId = this._activeBlock.id;
+    const otherCells = this._cells.filter((_cell) => _cell.blockId !== blockId);
+    for (const cell of cells) {
+      for (const _cell of otherCells) {
+        if (
+          _cell.point.offsetX === cell.point.offsetX + 1 &&
+          _cell.point.offsetY === cell.point.offsetY
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   _hasBarrierInBottom(): boolean {
     if (!this._activeBlock) {
       return false;
@@ -289,6 +341,26 @@ export class AppComponent {
     }
 
     return false;
+  }
+
+  _activeBlockMoveOneLeftStep(): void {
+    if (this._hasBarrierInLeft()) {
+      return;
+    }
+
+    if (this._activeBlock) {
+      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1 });
+    }
+  }
+
+  _activeBlockMoveOneRightStep(): void {
+    if (this._hasBarrierInRight()) {
+      return;
+    }
+
+    if (this._activeBlock) {
+      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1 });
+    }
   }
 
   _activeBlockMoveOneStep(): void {
