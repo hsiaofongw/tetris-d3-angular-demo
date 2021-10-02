@@ -1,0 +1,7 @@
+$svg-height: 100%;
+$svg-width: 100%;
+.svg-container {
+  width: $svg-width;
+  height: $svg-height;
+  border: 1px solid #000;
+}

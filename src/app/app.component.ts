@@ -2,6 +2,7 @@ import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import * as uuid from 'uuid';
+import { GridDisplayComponent } from './grid-display/grid-display.component';
 import {
   Block,
   BlockMove,
@@ -23,14 +24,11 @@ import {
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
+  @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
+
   nCols = 20;
   nRows = 20;
-  colPercentage = (1 / this.nCols) * 100;
-  rowPercentage = (1 / this.nRows) * 100;
   tickPeriodMs = 500;
-
-  @ViewChild('svgElement', { read: ElementRef })
-  _svgElementRef!: ElementRef<HTMLElement>;
 
   _scores = 0;
 
@@ -99,6 +97,10 @@ export class AppComponent {
     this._registerKeyUpProcedure('a', () => this._handleAKeyUp());
     this._registerKeyUpProcedure('d', () => this._handleDKeyUp());
     this._registerKeyUpProcedure('w', () => this._handleWKeyUp());
+    this._registerKeyUpProcedure('ArrowUp', () => this._handleWKeyUp());
+    this._registerKeyUpProcedure('ArrowLeft', () => this._handleAKeyUp());
+    this._registerKeyUpProcedure('ArrowRight', () => this._handleDKeyUp());
+    this._registerKeyUpProcedure('ArrowDown', () => this._handleSKeyUp());
 
     this._startTicking();
   }
@@ -190,25 +192,7 @@ export class AppComponent {
   }
 
   private _d3Update(): void {
-    d3.select(this._svgElementRef.nativeElement)
-      .selectAll('rect')
-      .data(this._cells)
-      .join(
-        (enter) =>
-          enter
-            .append('rect')
-            .attr('fill', '#BBD0D6')
-            .attr('stroke', '#000')
-            .attr('x', (d) => `${d.point.offsetX * this.colPercentage}%`)
-            .attr('y', (d) => `${d.point.offsetY * this.rowPercentage}%`)
-            .attr('width', this.colPercentage + '%')
-            .attr('height', this.rowPercentage + '%'),
-        (update) =>
-          update
-            .attr('x', (d) => `${d.point.offsetX * this.colPercentage}%`)
-            .attr('y', (d) => `${d.point.offsetY * this.rowPercentage}%`),
-        (exit) => exit.remove()
-      );
+    this.gridDisplay.update();   
   }
 
   _getRandomBlock() {

@@ -2,8 +2,8 @@
   <span>得分：</span>
   <span>{{ _scores }}</span>
 </div>
-<div class="svg-container">
-  <svg #svgElement width="100%" height="100%"></svg>
+<div class="grid-display-container">
+  <app-grid-display [cells]="_cells" [nRows]="nRows" [nCols]="nCols"></app-grid-display>
 </div>
 <div>
   <p>操作说明：w 顺时针旋转，a 左移一格，s 下移一格，d 右移一格。</p>
