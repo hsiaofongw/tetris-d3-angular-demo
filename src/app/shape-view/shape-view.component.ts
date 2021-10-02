@@ -97,7 +97,5 @@ export class ShapeViewComponent {
       .attr('font-size', `${this.cellLabelFontSize}`)
       .attr('text-anchor', 'middle')
       .text((d, i) => `${i+1}`);
-
-    console.log({ selection });
   }
 }
