@@ -1,5 +1,6 @@
 <div class="nav">
   <div><a [routerLink]="'play'">Play</a></div>
   <div><a [routerLink]="'view'">View</a></div>
+  <div *ngIf="loginRedirectTo"><a [href]="loginRedirectTo">Login</a></div>
 </div>
 <router-outlet></router-outlet>

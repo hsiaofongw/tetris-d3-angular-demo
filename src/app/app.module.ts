@@ -37,9 +37,10 @@ import { GridDisplayComponent } from './grid-display/grid-display.component';
 import { PlayComponent } from './play/play.component';
 import { ViewComponent } from './view/view.component';
 import { ShapeViewComponent } from './shape-view/shape-view.component';
+import { GithubOauthRedirectBackComponent } from './github-oauth-redirect-back/github-oauth-redirect-back.component';
 
 @NgModule({
-  declarations: [AppComponent, GridDisplayComponent, PlayComponent, ViewComponent, ShapeViewComponent],
+  declarations: [AppComponent, GridDisplayComponent, PlayComponent, ViewComponent, ShapeViewComponent, GithubOauthRedirectBackComponent],
   imports: [BrowserModule, AppRoutingModule],
   providers: [
     ShapePatternDetectAndRotate,
