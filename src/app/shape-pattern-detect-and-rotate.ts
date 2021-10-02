@@ -73,6 +73,7 @@ export class ShapePatternDetectAndRotate {
     @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[]
   ) {}
 
+  /** 判断当前 shape 是属于哪个 pattern */
   public detectPattern(shape: Shape): string | undefined {
     for (const _shapePrototype of this.shapePrototypes) {
       const _shape = _shapePrototype.getShape();
@@ -87,6 +88,7 @@ export class ShapePatternDetectAndRotate {
     return undefined;
   }
 
+  /** 判断一个 shape 能否通过平移到达另一个 shape */
   public canOneShapeTranslateToAnothor(shape1: Shape, shape2: Shape): boolean {
     if (shape1.length !== shape2.length) {
       return false;
@@ -120,7 +122,8 @@ export class ShapePatternDetectAndRotate {
     return true;
   }
 
-  gapDetect(block: Block, gap: Gap, board: Board): boolean {
+  /** 判断一个 block 周围是否有足够的空间 */
+  public gapDetect(block: Block, gap: Gap, board: Board): boolean {
     const otherCells = board.cells.filter(
       (_cell) => _cell.blockId !== block.id
     );
@@ -189,5 +192,77 @@ export class ShapePatternDetectAndRotate {
     }
 
     return true;
+  }
+
+  /** 判断一个 block 是否具备 rotate 的条件 */
+  public canRotate(block: Block, board: Board): boolean {
+    const pattern = this.detectPattern(block.cells.map(cell => cell.point));
+
+    // 不具备，因为检测不出当前是哪个 pattern
+    if (!pattern) {
+      window.console.log('no pattern');
+      return false;
+    }
+
+    // 不具备，因为当前的 pattern 没有声明对应的 rotate 时的 gap 要求
+    const gapRequire = this.gapRequres[pattern];
+    if (!gapRequire) {
+      window.console.log('no gap require');
+      return false;
+    }
+
+    // 不具备，因为当前没有足够的 gap 进行 rotate
+    if (!this.gapDetect(block, gapRequire, board)) {
+      window.console.log('no gap');
+      return false;
+    }
+
+    // 可以 rotate
+    return true;
+  }
+
+  /** 进行 rotate */
+  public rotate(block: Block, board: Board): void {
+    const currentPattern = this.detectPattern(block.cells.map(cell => cell.point));
+    if (!currentPattern) {
+      return;
+    }
+
+    const rotateToPattern = this.rotateRules[currentPattern];
+    if (!rotateToPattern) {
+      return;
+    }
+
+    const rotateToShape = this.shapePrototypes.find(shapeProto => shapeProto.shapePrototypeId === rotateToPattern);
+    if (!rotateToShape) {
+      return;
+    }
+
+    const currentShape = this.shapePrototypes.find(shapeProto => shapeProto.shapePrototypeId === currentPattern);
+    if (!currentShape) {
+      return;
+    }
+
+    const from = currentShape.getShape();
+    const to = rotateToShape.getShape();
+
+    if (from.length !== to.length) {
+      return;
+    }
+
+    const deltas: Point[] = [];
+    for (let i = 0; i < from.length; i++) {
+      deltas.push({
+        offsetX: to[i].offsetX - from[i].offsetX,
+        offsetY: to[i].offsetY - from[i].offsetY,
+      });
+    }
+
+    for (let i = 0; i < deltas.length; i++) {
+      block.cells[i].point.offsetX += deltas[i].offsetX;
+      block.cells[i].point.offsetY += deltas[i].offsetY;
+    }
+
+    window.console.log({ fromShape: currentShape, toShape: rotateToShape, deltas: deltas });
   }
 }

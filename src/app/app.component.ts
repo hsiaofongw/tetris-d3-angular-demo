@@ -63,6 +63,7 @@ export class AppComponent {
     this._registerKeyUpProcedure('s', () => this._handleSKeyUp());
     this._registerKeyUpProcedure('a', () => this._handleAKeyUp());
     this._registerKeyUpProcedure('d', () => this._handleDKeyUp());
+    this._registerKeyUpProcedure('w', () => this._handleWKeyUp());
 
     this._startTicking();
   }
@@ -100,6 +101,26 @@ export class AppComponent {
 
   _handleDKeyUp(): void {
     this._activeBlockMoveOneRightStep();
+  }
+
+  _handleWKeyUp(): void {
+    this._rotate();
+  }
+
+  private _rotate(): void {
+    // 如果没有 activeBlock 则不 rotate
+    if (!this._activeBlock) {
+      return;
+    }
+
+    // 如果 rotate 不了则不 rotate
+    if (!this.shapePattern.canRotate(this._activeBlock, this.board)) {
+      return;
+    }
+
+    // 可以 rotate
+    this.shapePattern.rotate(this._activeBlock, this.board);
+    this._d3Update();
   }
 
   private _registerKeyUpProcedure(key: string, fn: () => void): void {
