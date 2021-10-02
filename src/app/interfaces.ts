@@ -1,4 +1,3 @@
-
 export type Point = { offsetX: number; offsetY: number };
 export type Shape = Point[];
 export type Cell = { id: string; point: Point; blockId?: string };
@@ -22,3 +21,5 @@ export type BlockMove = {
   direction: 'up' | 'left' | 'right' | 'down';
   steps: number;
 };
+
+export type Gap = { left: number; top: number; right: number; down: number };

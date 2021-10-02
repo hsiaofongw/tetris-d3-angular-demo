@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Point, Shape } from './interfaces';
+import { Gap, Point, Shape } from './interfaces';
 import {
   ShapePrototype,
   SHAPE_PROTOTYPES,
@@ -7,6 +7,7 @@ import {
 
 @Injectable()
 export class ShapePatternDetectAndRotate {
+  /** 旋转法则，每一种形状对应的下一种形状 */
   public readonly rotateRules: Record<string, string> = {
     a1: 'a2',
     a2: 'a3',
@@ -28,6 +29,44 @@ export class ShapePatternDetectAndRotate {
     g2: 'g3',
     g3: 'g4',
     g4: 'g1',
+  };
+
+  /** 旋转限制，旋转时所需要的附近的空间数量 */
+  public readonly gapRequres: Record<string, Gap> = {
+    a1: { top: 2, down: 1, left: 0, right: 0 },
+    a2: { top: 0, down: 0, left: 2, right: 1 },
+    a3: { top: 2, down: 1, left: 0, right: 0 },
+    a4: { top: 0, down: 0, left: 2, right: 1 },
+
+    b1: { left: 0, right: 0, top: 1, down: 0 },
+    b2: { left: 0, right: 1, top: 0, down: 0 },
+    b3: { left: 0, right: 0, top: 0, down: 1 },
+    b4: { left: 1, right: 0, top: 0, down: 0 },
+
+    c1: { left: 0, right: 0, top: 1, down: 0 },
+    c2: { left: 0, top: 0, right: 1, down: 0 },
+    c3: { left: 0, right: 0, top: 0, down: 1 },
+    c4: { left: 1, right: 0, top: 0, down: 0 },
+
+    d1: { left: 0, right: 0, top: 1, down: 0 },
+    d2: { left: 1, top: 0, right: 0, down: 0 },
+    d3: { left: 0, right: 0, top: 1, down: 0 },
+    d4: { left: 1, top: 0, right: 0, down: 0 },
+
+    e1: { left: 0, right: 0, top: 1, down: 0 },
+    e2: { left: 0, right: 1, top: 0, down: 0 },
+    e3: { left: 0, right: 0, top: 0, down: 1 },
+    e4: { left: 1, right: 0, top: 0, down: 0 },
+
+    f1: { left: 0, right: 0, top: 1, down: 0 },
+    f2: { left: 1, right: 0, top: 0, down: 0 },
+    f3: { left: 0, right: 0, top: 1, down: 0 },
+    f4: { left: 1, right: 0, top: 0, down: 0 },
+
+    g1: { left: 0, right: 0, top: 0, down: 0 },
+    g2: { left: 0, right: 0, top: 0, down: 0 },
+    g3: { left: 0, right: 0, top: 0, down: 0 },
+    g4: { left: 0, right: 0, top: 0, down: 0 },
   };
 
   constructor(
