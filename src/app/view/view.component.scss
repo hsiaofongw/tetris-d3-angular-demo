@@ -1,0 +1,14 @@
+$cell-size: 80px;
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, max-content);
+}
+
+.cell {
+  height: $cell-size;
+  width: $cell-size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

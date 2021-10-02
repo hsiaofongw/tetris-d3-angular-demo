@@ -1,1 +1,15 @@
-<p>view works!</p>
+<!-- <svg height="30" width="45" viewport="0 0 45 15">
+  <rect x="0" y="0" width="15" height="15" fill-opacity="0" stroke="#000"></rect>
+  <rect x="15" y="0" width="15" height="15" fill-opacity="0" stroke="#000"></rect>
+  <rect x="30" y="0" width="15" height="15" fill-opacity="0" stroke="#000"></rect>
+  <rect x="0" y="15" width="15" height="15" fill-opacity="0" stroke="#000"></rect>
+</svg> -->
+<div class="grid-container">
+  <ng-container *ngFor="let group of _shapeGroups">
+    <div class="cell">{{ group.id }}</div>
+    <ng-container *ngFor="let shape of group.children; let i = index">
+      <div class="cell"><app-shape-view [shape]="shape"></app-shape-view></div>
+    </ng-container>
+  </ng-container>
+  
+</div>
