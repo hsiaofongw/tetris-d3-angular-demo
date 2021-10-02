@@ -11,7 +11,7 @@ export class ShapePrototypeB4 implements ShapePrototype {
       { offsetX: 0, offsetY: 2 },
       { offsetX: 0, offsetY: 1 },
       { offsetX: 0, offsetY: 0 },
-      { offsetX: 1, offsetY: 2 },
+      { offsetX: 1, offsetY: 0 },
     ];
   }
 }
