@@ -3,7 +3,7 @@ import { Shape } from '../interfaces';
 import { ShapePrototype } from './shape-prototype';
 
 @Injectable()
-export class ShapePrototypeE1 implements ShapePrototype {
+export class ShapePrototypeE2 implements ShapePrototype {
   shapeClassId = 'e';
   shapePrototypeId = 'e2';
   getShape(): Shape {

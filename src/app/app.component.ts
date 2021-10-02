@@ -1,8 +1,9 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import * as uuid from 'uuid';
 import { Block, BlockMove, BoundingBox, Cell, Point, Shape } from './interfaces';
+import { ShapePrototype, SHAPE_PROTOTYPES } from './shape-prototypes/shape-prototype';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,8 @@ export class AppComponent {
   _keyUpProcedure: { [key: string]: () => void } = {};
 
   _tickTimer?: number;
+
+  constructor(@Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[]) {}
 
   ngOnInit(): void {
     this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
@@ -83,44 +86,7 @@ export class AppComponent {
   }
 
   private _getShapes(): Shape[] {
-    const straight: Shape = [
-      { offsetX: 0, offsetY: 0 },
-      { offsetX: 1, offsetY: 0 },
-      { offsetX: 2, offsetY: 0 },
-      { offsetX: 3, offsetY: 0 },
-    ];
-
-    const square: Shape = [
-      { offsetX: 0, offsetY: 0 },
-      { offsetX: 1, offsetY: 0 },
-      { offsetX: 0, offsetY: 1 },
-      { offsetX: 1, offsetY: 1 },
-    ];
-
-    const tMinus: Shape = [
-      { offsetX: 0, offsetY: 0 },
-      { offsetX: 1, offsetY: 0 },
-      { offsetX: 2, offsetY: 0 },
-      { offsetX: 1, offsetY: 1 },
-    ];
-
-    const lMinus: Shape = [
-      { offsetX: 0, offsetY: 0 },
-      { offsetX: 0, offsetY: 1 },
-      { offsetX: 0, offsetY: 2 },
-      { offsetX: 1, offsetY: 2 },
-    ];
-
-    const skew: Shape = [
-      { offsetX: 0, offsetY: 1 },
-      { offsetX: 1, offsetY: 1 },
-      { offsetX: 1, offsetY: 0 },
-      { offsetX: 2, offsetY: 0 },
-    ];
-
-    const candidateShapes: Shape[] = [straight, square, tMinus, lMinus, skew];
-
-    return candidateShapes;
+    return this.shapePrototypes.map(shapeProto => shapeProto.getShape());
   }
 
   private _getRandomShape(): Shape {
