@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ShapePatternDetectAndRotate } from './shape-pattern-detect-and-rotate';
 import { SHAPE_PROTOTYPES } from './shape-prototypes/shape-prototype';
 import { ShapePrototypeA1 } from './shape-prototypes/shape-prototype-a1';
 import { ShapePrototypeA2 } from './shape-prototypes/shape-prototype-a2';
@@ -37,6 +38,7 @@ import { ShapePrototypeG4 } from './shape-prototypes/shape-prototype-g4';
   declarations: [AppComponent],
   imports: [BrowserModule, AppRoutingModule],
   providers: [
+    ShapePatternDetectAndRotate,
     { provide: SHAPE_PROTOTYPES, useClass: ShapePrototypeA1, multi: true },
     { provide: SHAPE_PROTOTYPES, useClass: ShapePrototypeA2, multi: true },
     { provide: SHAPE_PROTOTYPES, useClass: ShapePrototypeA3, multi: true },

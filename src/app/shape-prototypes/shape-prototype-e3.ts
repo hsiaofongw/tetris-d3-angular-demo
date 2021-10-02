@@ -4,9 +4,9 @@ import { ShapePrototype } from './shape-prototype';
 
 @Injectable()
 export class ShapePrototypeE3 implements ShapePrototype {
-  shapeClassId = 'e';
-  shapePrototypeId = 'e3';
-  getShape(): Shape {
+  public readonly shapeClassId = 'e';
+  public readonly shapePrototypeId = 'e3';
+  public getShape(): Shape {
     return [
       { offsetX: 2, offsetY: 1 },
       { offsetX: 1, offsetY: 1 },

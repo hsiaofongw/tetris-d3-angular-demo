@@ -2,8 +2,8 @@ import { InjectionToken } from '@angular/core';
 import { Shape } from '../interfaces';
 
 export abstract class ShapePrototype {
-  abstract shapeClassId: string;
-  abstract shapePrototypeId: string;
+  abstract readonly shapeClassId: string;
+  abstract readonly shapePrototypeId: string;
   abstract getShape(): Shape;
 }
 
