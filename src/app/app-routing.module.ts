@@ -4,9 +4,9 @@ import { PlayComponent } from './play/play.component';
 import { ViewComponent } from './view/view.component';
 
 const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'play '},
+  { path: '', redirectTo: 'play', pathMatch: 'full'},
   { path: 'play', component: PlayComponent },
-  { path: 'view', component: ViewComponent }
+  { path: 'view', component: ViewComponent },
 ];
 
 @NgModule({
