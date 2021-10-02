@@ -108,6 +108,7 @@ export class AppComponent {
   }
 
   private _rotate(): void {
+    window.console.log('pressed rotate key');
     // 如果没有 activeBlock 则不 rotate
     if (!this._activeBlock) {
       return;
@@ -115,10 +116,12 @@ export class AppComponent {
 
     // 如果 rotate 不了则不 rotate
     if (!this.shapePattern.canRotate(this._activeBlock, this.board)) {
+      window.console.log('cant rotate')
       return;
     }
 
     // 可以 rotate
+    window.console.log('ok to rotate');
     this.shapePattern.rotate(this._activeBlock, this.board);
     this._d3Update();
   }
@@ -127,14 +130,18 @@ export class AppComponent {
     this._keyUpProcedure[key] = fn;
   }
 
-  private _getShapes(): Shape[] {
-    return this.shapePrototypes.map((shapeProto) => shapeProto.getShape());
+  private _getShapes(): ShapePrototype[] {
+    return this.shapePrototypes;
   }
 
   private _getRandomShape(): Shape {
     const shapes = this._getShapes();
     const choose = d3.randomInt(0, shapes.length);
-    return shapes[choose()];
+    const chooseShape = shapes[choose()];
+
+    console.log({choose: chooseShape});
+
+    return chooseShape.getShape();
   }
 
   private _getBoundingBox(shape: Shape): BoundingBox {

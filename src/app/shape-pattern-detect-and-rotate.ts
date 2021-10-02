@@ -17,6 +17,14 @@ export class ShapePatternDetectAndRotate {
     b2: 'b3',
     b3: 'b4',
     b4: 'b1',
+    c1: 'c2',
+    c2: 'c3',
+    c3: 'c4',
+    c4: 'c1',
+    d1: 'd2',
+    d2: 'd3',
+    d3: 'd4',
+    d4: 'd1',
     e1: 'e2',
     e2: 'e3',
     e3: 'e4',
@@ -225,11 +233,13 @@ export class ShapePatternDetectAndRotate {
   public rotate(block: Block, board: Board): void {
     const currentPattern = this.detectPattern(block.cells.map(cell => cell.point));
     if (!currentPattern) {
+      window.console.log('no pattern');
       return;
     }
 
     const rotateToPattern = this.rotateRules[currentPattern];
     if (!rotateToPattern) {
+      window.console.log('no rotate to pattern');
       return;
     }
 
