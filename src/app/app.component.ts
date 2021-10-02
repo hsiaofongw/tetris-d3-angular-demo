@@ -32,6 +32,8 @@ export class AppComponent {
   @ViewChild('svgElement', { read: ElementRef })
   _svgElementRef!: ElementRef<HTMLElement>;
 
+  _scores = 0;
+
   _cells: Cell[] = [];
 
   __activeBlock?: Block;
@@ -83,6 +85,7 @@ export class AppComponent {
     }
 
     this._cells = this._cells.filter(_cell => !cellIds.has(_cell.id));
+    this._scores += cellIds.size;
   }
 
   ngOnInit(): void {
@@ -194,7 +197,7 @@ export class AppComponent {
         (enter) =>
           enter
             .append('rect')
-            .attr('fill', '#FFF')
+            .attr('fill', '#BBD0D6')
             .attr('stroke', '#000')
             .attr('x', (d) => `${d.point.offsetX * this.colPercentage}%`)
             .attr('y', (d) => `${d.point.offsetY * this.rowPercentage}%`)
