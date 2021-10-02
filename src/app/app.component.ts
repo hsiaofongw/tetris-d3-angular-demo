@@ -2,30 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import * as uuid from 'uuid';
-
-type Point = { offsetX: number; offsetY: number };
-type Shape = Point[];
-type Cell = { id: string; point: Point; blockId?: string };
-type Block = {
-  id: string;
-  offsetX: number;
-  offsetY: number;
-  cells: Cell[];
-};
-
-type BoundingBox = {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  width: number;
-  height: number;
-};
-
-type BlockMove = {
-  direction: 'up' | 'left' | 'right' | 'down';
-  steps: number;
-};
+import { Block, BlockMove, BoundingBox, Cell, Point, Shape } from './interfaces';
 
 @Component({
   selector: 'app-root',
@@ -376,5 +353,6 @@ export class AppComponent {
 
   ngOnDestroy(): void {
     this._stopTicking();
+    this._keyUpSubscription?.unsubscribe();
   }
 }
