@@ -8,7 +8,9 @@
   <ng-container *ngFor="let group of _shapeGroups">
     <div class="cell">{{ group.id }}</div>
     <ng-container *ngFor="let shape of group.children; let i = index">
-      <div class="cell"><app-shape-view [shape]="shape"></app-shape-view></div>
+      <div class="cell">
+        <app-shape-view [shape]="shape"></app-shape-view>
+      </div>
     </ng-container>
   </ng-container>
   

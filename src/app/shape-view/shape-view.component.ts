@@ -16,6 +16,9 @@ export class ShapeViewComponent {
   cellSizePx = 15;
 
   @Input()
+  cellLabelFontSize = 12;
+
+  @Input()
   shape!: Shape;
 
   _height = 0;
@@ -71,18 +74,30 @@ export class ShapeViewComponent {
   }
 
   _updateD3(svgElementRef: ElementRef<SVGElement>) {
-    d3.select(svgElementRef.nativeElement)
-      .selectAll('rect')
+    const selection = d3
+      .select(svgElementRef.nativeElement)
+      .selectAll('g')
       .data(this.shape)
-      .join((enter) =>
-        enter
-          .append('rect')
-          .attr('x', (d) => d.offsetX * this.cellSizePx)
-          .attr('y', (d) => d.offsetY * this.cellSizePx)
-          .attr('fill-opacity', _ => '0')
-          .attr('stroke', _ => '#000')
-          .attr('width', `${this.cellSizePx}`)
-          .attr('height', `${this.cellSizePx}`)
-      );
+      .join((enter) => enter.append('g'));
+
+    selection
+      .append('rect')
+      .attr('x', (d) => d.offsetX * this.cellSizePx)
+      .attr('y', (d) => d.offsetY * this.cellSizePx)
+      .attr('fill-opacity', (_) => '0')
+      .attr('stroke', (_) => '#000')
+      .attr('width', `${this.cellSizePx}`)
+      .attr('height', `${this.cellSizePx}`);
+
+    selection
+      .append('text')
+      .attr('x', (d) => d.offsetX * this.cellSizePx + this.cellSizePx / 2)
+      .attr('y', (d) => d.offsetY * this.cellSizePx + this.cellSizePx / 2)
+      .attr('dy', `${this.cellLabelFontSize/2}`)
+      .attr('font-size', `${this.cellLabelFontSize}`)
+      .attr('text-anchor', 'middle')
+      .text((d, i) => `${i+1}`);
+
+    console.log({ selection });
   }
 }
