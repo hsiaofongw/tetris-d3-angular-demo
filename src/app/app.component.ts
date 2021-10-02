@@ -34,7 +34,17 @@ export class AppComponent {
 
   _cells: Cell[] = [];
 
-  _activeBlock?: Block;
+  __activeBlock?: Block;
+
+  get _activeBlock(): Block | undefined { return this.__activeBlock; }
+
+  set _activeBlock(value: Block | undefined) { 
+    this.__activeBlock = value 
+
+    if (value === undefined) {
+      this._tryEliminate();
+    }
+  }
 
   _keyUpSubscription?: Subscription;
 
@@ -52,6 +62,28 @@ export class AppComponent {
     @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
     private shapePattern: ShapePatternDetectAndRotate
   ) {}
+
+  /** 尝试消去整行的块 */
+  _tryEliminate(): void {
+    const cellsGroupByRows: Cell[][] = [];
+    for (let i = 0; i < this.nRows; i++) {
+      cellsGroupByRows.push(this._cells.filter(_cell => _cell.point.offsetY === i));
+    }
+
+    const cellIds = new Set<string>();
+    for (let i = 0; i < this.nRows; i++) {
+      const row = cellsGroupByRows[i];
+      if (row.length === this.nCols) {
+        for (const cell of row) {
+          cellIds.add(cell.id);
+        }
+
+        this._cells.filter(_cell => _cell.point.offsetY < i).forEach(_cell => _cell.point.offsetY = _cell.point.offsetY+1);
+      }
+    }
+
+    this._cells = this._cells.filter(_cell => !cellIds.has(_cell.id));
+  }
 
   ngOnInit(): void {
     this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
