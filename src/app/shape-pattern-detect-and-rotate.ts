@@ -208,20 +208,20 @@ export class ShapePatternDetectAndRotate {
 
     // 不具备，因为检测不出当前是哪个 pattern
     if (!pattern) {
-      window.console.log('no pattern');
+      // window.console.log('no pattern');
       return false;
     }
 
     // 不具备，因为当前的 pattern 没有声明对应的 rotate 时的 gap 要求
     const gapRequire = this.gapRequres[pattern];
     if (!gapRequire) {
-      window.console.log('no gap require');
+      // window.console.log('no gap require');
       return false;
     }
 
     // 不具备，因为当前没有足够的 gap 进行 rotate
     if (!this.gapDetect(block, gapRequire, board)) {
-      window.console.log('no gap');
+      // window.console.log('no gap');
       return false;
     }
 
@@ -233,13 +233,13 @@ export class ShapePatternDetectAndRotate {
   public rotate(block: Block, board: Board): void {
     const currentPattern = this.detectPattern(block.cells.map(cell => cell.point));
     if (!currentPattern) {
-      window.console.log('no pattern');
+      // window.console.log('no pattern');
       return;
     }
 
     const rotateToPattern = this.rotateRules[currentPattern];
     if (!rotateToPattern) {
-      window.console.log('no rotate to pattern');
+      // window.console.log('no rotate to pattern');
       return;
     }
 
@@ -273,6 +273,6 @@ export class ShapePatternDetectAndRotate {
       block.cells[i].point.offsetY += deltas[i].offsetY;
     }
 
-    window.console.log({ fromShape: currentShape, toShape: rotateToShape, deltas: deltas });
+    // window.console.log({ fromShape: currentShape, toShape: rotateToShape, deltas: deltas });
   }
 }

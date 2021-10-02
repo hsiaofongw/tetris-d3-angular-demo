@@ -108,7 +108,7 @@ export class AppComponent {
   }
 
   private _rotate(): void {
-    window.console.log('pressed rotate key');
+    // window.console.log('pressed rotate key');
     // 如果没有 activeBlock 则不 rotate
     if (!this._activeBlock) {
       return;
@@ -116,12 +116,12 @@ export class AppComponent {
 
     // 如果 rotate 不了则不 rotate
     if (!this.shapePattern.canRotate(this._activeBlock, this.board)) {
-      window.console.log('cant rotate')
+      // window.console.log('cant rotate')
       return;
     }
 
     // 可以 rotate
-    window.console.log('ok to rotate');
+    // window.console.log('ok to rotate');
     this.shapePattern.rotate(this._activeBlock, this.board);
     this._d3Update();
   }
@@ -139,7 +139,7 @@ export class AppComponent {
     const choose = d3.randomInt(0, shapes.length);
     const chooseShape = shapes[choose()];
 
-    console.log({choose: chooseShape});
+    // window.console.log({choose: chooseShape});
 
     return chooseShape.getShape();
   }
