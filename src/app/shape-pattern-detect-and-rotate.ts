@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Gap, Point, Shape } from './interfaces';
+import { Block, Board, Gap, Point, Shape } from './interfaces';
 import {
   ShapePrototype,
   SHAPE_PROTOTYPES,
@@ -115,6 +115,77 @@ export class ShapePatternDetectAndRotate {
 
     if (maxDeltaY !== minDeltaY) {
       return false;
+    }
+
+    return true;
+  }
+
+  gapDetect(block: Block, gap: Gap, board: Board): boolean {
+    const otherCells = board.cells.filter(
+      (_cell) => _cell.blockId !== block.id
+    );
+    const shape = block.cells.map((cell) => cell.point);
+    const minX = Math.min(...shape.map((p) => p.offsetX));
+    const maxX = Math.max(...shape.map((p) => p.offsetX));
+    const minY = Math.min(...shape.map((p) => p.offsetY));
+    const maxY = Math.max(...shape.map((p) => p.offsetY));
+    for (const cell of block.cells) {
+      // 判断下方障碍物
+      for (let y = cell.point.offsetY; y <= maxY + gap.down; y++) {
+        if (y >= board.nRows) {
+          return false;
+        }
+
+        const barrierCells = otherCells
+          .filter((_cell) => _cell.point.offsetX === cell.point.offsetX)
+          .filter((_cell) => _cell.point.offsetY === y);
+
+        if (barrierCells.length > 0) {
+          return false;
+        }
+      }
+
+      // 判断上方障碍物
+      for (let y = cell.point.offsetY; y >= minY - gap.top; y--) {
+        if (y < 0) {
+          return false;
+        }
+
+        const barrierCells = otherCells
+          .filter((_cell) => _cell.point.offsetX === cell.point.offsetX)
+          .filter((_cell) => _cell.point.offsetY === y);
+        if (barrierCells.length > 0) {
+          return false;
+        }
+      }
+
+      // 判断右边的障碍物
+      for (let x = cell.point.offsetX; x <= maxX + gap.right; x++) {
+        if (x >= board.nCols) {
+          return false;
+        }
+
+        const barrierCells = otherCells
+          .filter((_cell) => _cell.point.offsetY === cell.point.offsetY)
+          .filter((_cell) => _cell.point.offsetX === x);
+        if (barrierCells.length > 0) {
+          return false;
+        }
+      }
+
+      // 判断左边的障碍物
+      for (let x = cell.point.offsetX; x >= minX - gap.left; x--) {
+        if (x < 0) {
+          return false;
+        }
+
+        const barrierCells = otherCells
+          .filter((_cell) => _cell.point.offsetY === cell.point.offsetY)
+          .filter((_cell) => _cell.point.offsetX === x);
+        if (barrierCells.length > 0) {
+          return false;
+        }
+      }
     }
 
     return true;

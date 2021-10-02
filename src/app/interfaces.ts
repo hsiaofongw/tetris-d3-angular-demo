@@ -23,3 +23,5 @@ export type BlockMove = {
 };
 
 export type Gap = { left: number; top: number; right: number; down: number };
+
+export type Board = { nCols: number, nRows: number, cells: Cell[] };

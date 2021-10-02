@@ -2,8 +2,20 @@ import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import * as uuid from 'uuid';
-import { Block, BlockMove, BoundingBox, Cell, Point, Shape } from './interfaces';
-import { ShapePrototype, SHAPE_PROTOTYPES } from './shape-prototypes/shape-prototype';
+import {
+  Block,
+  BlockMove,
+  Board,
+  BoundingBox,
+  Cell,
+  Point,
+  Shape,
+} from './interfaces';
+import { ShapePatternDetectAndRotate } from './shape-pattern-detect-and-rotate';
+import {
+  ShapePrototype,
+  SHAPE_PROTOTYPES,
+} from './shape-prototypes/shape-prototype';
 
 @Component({
   selector: 'app-root',
@@ -30,7 +42,16 @@ export class AppComponent {
 
   _tickTimer?: number;
 
-  constructor(@Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[]) {}
+  readonly board: Board = {
+    nCols: this.nCols,
+    nRows: this.nRows,
+    cells: this._cells,
+  };
+
+  constructor(
+    @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
+    private shapePattern: ShapePatternDetectAndRotate
+  ) {}
 
   ngOnInit(): void {
     this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
@@ -86,7 +107,7 @@ export class AppComponent {
   }
 
   private _getShapes(): Shape[] {
-    return this.shapePrototypes.map(shapeProto => shapeProto.getShape());
+    return this.shapePrototypes.map((shapeProto) => shapeProto.getShape());
   }
 
   private _getRandomShape(): Shape {
@@ -203,60 +224,30 @@ export class AppComponent {
     }
   }
 
+  /** 判断左侧一格空间内是否有障碍物 */
   _hasBarrierInLeft(): boolean {
     if (!this._activeBlock) {
       return false;
     }
 
-    const cells = this._activeBlock.cells;
-    const box = this._getBoundingBox(cells.map((cell) => cell.point));
-
-    if (box.minX === 0) {
-      return true;
-    }
-
-    const blockId = this._activeBlock.id;
-    const otherCells = this._cells.filter((_cell) => _cell.blockId !== blockId);
-    for (const cell of cells) {
-      for (const _cell of otherCells) {
-        if (
-          _cell.point.offsetX === cell.point.offsetX - 1 &&
-          _cell.point.offsetY === cell.point.offsetY
-        ) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return !this.shapePattern.gapDetect(
+      this._activeBlock,
+      { left: 1, top: 0, down: 0, right: 0 },
+      this.board
+    );
   }
 
+  /** 判断右侧一格空间内是否有障碍物 */
   _hasBarrierInRight(): boolean {
     if (!this._activeBlock) {
       return false;
     }
 
-    const cells = this._activeBlock.cells;
-    const box = this._getBoundingBox(cells.map((cell) => cell.point));
-
-    if (box.maxX === this.nCols - 1) {
-      return true;
-    }
-
-    const blockId = this._activeBlock.id;
-    const otherCells = this._cells.filter((_cell) => _cell.blockId !== blockId);
-    for (const cell of cells) {
-      for (const _cell of otherCells) {
-        if (
-          _cell.point.offsetX === cell.point.offsetX + 1 &&
-          _cell.point.offsetY === cell.point.offsetY
-        ) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return !this.shapePattern.gapDetect(
+      this._activeBlock,
+      { left: 0, right: 1, down: 0, top: 0 },
+      this.board
+    );
   }
 
   _hasBarrierInBottom(): boolean {
