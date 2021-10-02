@@ -34,9 +34,11 @@ import { ShapePrototypeG2 } from './shape-prototypes/shape-prototype-g2';
 import { ShapePrototypeG3 } from './shape-prototypes/shape-prototype-g3';
 import { ShapePrototypeG4 } from './shape-prototypes/shape-prototype-g4';
 import { GridDisplayComponent } from './grid-display/grid-display.component';
+import { PlayComponent } from './play/play.component';
+import { ViewComponent } from './view/view.component';
 
 @NgModule({
-  declarations: [AppComponent, GridDisplayComponent],
+  declarations: [AppComponent, GridDisplayComponent, PlayComponent, ViewComponent],
   imports: [BrowserModule, AppRoutingModule],
   providers: [
     ShapePatternDetectAndRotate,
