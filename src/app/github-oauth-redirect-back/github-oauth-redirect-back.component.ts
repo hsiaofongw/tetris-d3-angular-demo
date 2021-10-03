@@ -13,7 +13,6 @@ export class GithubOauthRedirectBackComponent implements OnInit {
   constructor(private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    window.console.log(this.route.snapshot.queryParams);
     this.code = this.route.snapshot.queryParamMap.get('code') ?? '';
   }
 

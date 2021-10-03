@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@angular/core';
-import { Block, Board, Gap, Point, Shape } from './interfaces';
+import { IBlock, IBoard, IGap, IPoint, IShape } from './interfaces';
 import {
   ShapePrototype,
   SHAPE_PROTOTYPES,
@@ -40,7 +40,7 @@ export class ShapePatternDetectAndRotate {
   };
 
   /** 旋转限制，旋转时所需要的附近的空间数量 */
-  public readonly gapRequres: Record<string, Gap> = {
+  public readonly gapRequres: Record<string, IGap> = {
     a1: { top: 2, down: 1, left: 0, right: 0 },
     a2: { top: 0, down: 0, left: 2, right: 1 },
     a3: { top: 2, down: 1, left: 0, right: 0 },
@@ -82,7 +82,7 @@ export class ShapePatternDetectAndRotate {
   ) {}
 
   /** 判断当前 shape 是属于哪个 pattern */
-  public detectPattern(shape: Shape): string | undefined {
+  public detectPattern(shape: IShape): string | undefined {
     for (const _shapePrototype of this.shapePrototypes) {
       const _shape = _shapePrototype.getShape();
       if (
@@ -97,13 +97,13 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 判断一个 shape 能否通过平移到达另一个 shape */
-  public canOneShapeTranslateToAnothor(shape1: Shape, shape2: Shape): boolean {
+  public canOneShapeTranslateToAnothor(shape1: IShape, shape2: IShape): boolean {
     if (shape1.length !== shape2.length) {
       return false;
     }
 
     const l = shape1.length;
-    const deltas: Point[] = [];
+    const deltas: IPoint[] = [];
     for (let i = 0; i < l; i++) {
       deltas.push({
         offsetX: shape1[i].offsetX - shape2[i].offsetX,
@@ -131,7 +131,7 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 判断一个 block 周围是否有足够的空间 */
-  public gapDetect(block: Block, gap: Gap, board: Board): boolean {
+  public gapDetect(block: IBlock, gap: IGap, board: IBoard): boolean {
     const otherCells = board.cells.filter(
       (_cell) => _cell.blockId !== block.id
     );
@@ -203,7 +203,7 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 判断一个 block 是否具备 rotate 的条件 */
-  public canRotate(block: Block, board: Board): boolean {
+  public canRotate(block: IBlock, board: IBoard): boolean {
     const pattern = this.detectPattern(block.cells.map(cell => cell.point));
 
     // 不具备，因为检测不出当前是哪个 pattern
@@ -230,7 +230,7 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 进行 rotate */
-  public rotate(block: Block, board: Board): void {
+  public rotate(block: IBlock, board: IBoard): void {
     const currentPattern = this.detectPattern(block.cells.map(cell => cell.point));
     if (!currentPattern) {
       // window.console.log('no pattern');
@@ -260,7 +260,7 @@ export class ShapePatternDetectAndRotate {
       return;
     }
 
-    const deltas: Point[] = [];
+    const deltas: IPoint[] = [];
     for (let i = 0; i < from.length; i++) {
       deltas.push({
         offsetX: to[i].offsetX - from[i].offsetX,

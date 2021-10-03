@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Shape } from '../interfaces';
+import { IShape } from '../interfaces';
 import { ShapePrototype } from './shape-prototype';
 
 @Injectable()
 export class ShapePrototypeB4 implements ShapePrototype {
   public readonly shapeClassId = 'b';
   public readonly shapePrototypeId = 'b4';
-  public getShape(): Shape {
+  public getShape(): IShape {
     return [
       { offsetX: 0, offsetY: 2 },
       { offsetX: 0, offsetY: 1 },

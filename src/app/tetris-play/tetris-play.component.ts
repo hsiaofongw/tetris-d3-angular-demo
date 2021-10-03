@@ -4,14 +4,15 @@ import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import * as uuid from 'uuid';
 import { GridDisplayComponent } from '../grid-display/grid-display.component';
+import { Board, GAME_BOARD } from '../helpers/board';
 import {
-  Block,
-  BlockMove,
-  Board,
-  BoundingBox,
-  Cell,
-  Point,
-  Shape,
+  IBlock,
+  IBlockMove,
+  IBoard,
+  IBoundingBox,
+  ICell,
+  IPoint,
+  IShape,
 } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
 import {
@@ -19,12 +20,13 @@ import {
   SHAPE_PROTOTYPES,
 } from '../shape-prototypes/shape-prototype';
 
+/** 该组件实现了俄罗斯方块的游戏行为逻辑 */
 @Component({
   selector: 'app-play',
-  templateUrl: './play.component.html',
-  styleUrls: ['./play.component.scss']
+  templateUrl: './tetris-play.component.html',
+  styleUrls: ['./tetris-play.component.scss']
 })
-export class PlayComponent {
+export class TetrisPlayComponent {
 
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
@@ -34,13 +36,13 @@ export class PlayComponent {
 
   _scores = 0;
 
-  _cells: Cell[] = [];
+  _cells: ICell[] = [];
 
-  __activeBlock?: Block;
+  __activeBlock?: IBlock;
 
-  get _activeBlock(): Block | undefined { return this.__activeBlock; }
+  get _activeBlock(): IBlock | undefined { return this.__activeBlock; }
 
-  set _activeBlock(value: Block | undefined) { 
+  set _activeBlock(value: IBlock | undefined) { 
     this.__activeBlock = value 
 
     if (value === undefined) {
@@ -54,7 +56,7 @@ export class PlayComponent {
 
   _tickTimer?: number;
 
-  readonly board: Board = {
+  readonly _board: IBoard = {
     nCols: this.nCols,
     nRows: this.nRows,
     cells: this._cells,
@@ -62,12 +64,13 @@ export class PlayComponent {
 
   constructor(
     @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
+    @Inject(GAME_BOARD) private board: Board,
     private shapePattern: ShapePatternDetectAndRotate
   ) {}
 
   /** 尝试消去整行的块 */
   _tryEliminate(): void {
-    const cellsGroupByRows: Cell[][] = [];
+    const cellsGroupByRows: ICell[][] = [];
     for (let i = 0; i < this.nRows; i++) {
       cellsGroupByRows.push(this._cells.filter(_cell => _cell.point.offsetY === i));
     }
@@ -154,14 +157,14 @@ export class PlayComponent {
     }
 
     // 如果 rotate 不了则不 rotate
-    if (!this.shapePattern.canRotate(this._activeBlock, this.board)) {
+    if (!this.shapePattern.canRotate(this._activeBlock, this._board)) {
       // window.console.log('cant rotate')
       return;
     }
 
     // 可以 rotate
     // window.console.log('ok to rotate');
-    this.shapePattern.rotate(this._activeBlock, this.board);
+    this.shapePattern.rotate(this._activeBlock, this._board);
     this._d3Update();
   }
 
@@ -173,7 +176,7 @@ export class PlayComponent {
     return this.shapePrototypes;
   }
 
-  private _getRandomShape(): Shape {
+  private _getRandomShape(): IShape {
     const shapes = this._getShapes();
     const choose = d3.randomInt(0, shapes.length);
     const chooseShape = shapes[choose()];
@@ -183,7 +186,7 @@ export class PlayComponent {
     return chooseShape.getShape();
   }
 
-  private _getBoundingBox(shape: Shape): BoundingBox {
+  private _getBoundingBox(shape: IShape): IBoundingBox {
     const xOffsets = shape.map((point) => point.offsetX);
     const yOffsets = shape.map((point) => point.offsetY);
     const minX = Math.min(...xOffsets);
@@ -204,31 +207,31 @@ export class PlayComponent {
     const blockWidth = blockBoundingBox.width;
     const maximumAllowXOffset = this.nCols - blockWidth;
     const getBlockOffsetX = d3.randomInt(0, maximumAllowXOffset);
-    const blockOffsetX = getBlockOffsetX();
+    const initialBlockOffsetX = getBlockOffsetX();
+    const initialBlockOffsetY = 0;
 
-    const block: Block = {
+    const block: IBlock = {
       id: blockId,
-      offsetX: blockOffsetX,
-      offsetY: 0,
       cells: shape.map((point) => ({ id: uuid.v4(), point: point })),
     };
 
-    block.cells.forEach((cell) => (cell.blockId = blockId));
+    block.cells.forEach((cell) => {
+      cell.blockId = blockId;
+      cell.point.offsetX = cell.point.offsetX + initialBlockOffsetX;
+      cell.point.offsetY = cell.point.offsetY + initialBlockOffsetY;
+    });
 
     return block;
   }
 
   _addRandomBlockToScreen(): void {
     const block = this._getRandomBlock();
-    block.cells.forEach(
-      (cell) => (cell.point.offsetX = block.offsetX + cell.point.offsetX)
-    );
     block.cells.forEach((cell) => this._cells.push(cell));
     this._d3Update();
     this._activeBlock = block;
   }
 
-  _moveBlock(block: Block, move: BlockMove): void {
+  _moveBlock(block: IBlock, move: IBlockMove): void {
     block.cells.forEach((cell) => {
       if (move.direction === 'down') {
         this._pointDown(cell.point, move.steps);
@@ -250,19 +253,19 @@ export class PlayComponent {
     this._d3Update();
   }
 
-  _pointRight(point: Point, steps: number): void {
+  _pointRight(point: IPoint, steps: number): void {
     point.offsetX = point.offsetX + steps;
   }
 
-  _pointDown(point: Point, steps: number): void {
+  _pointDown(point: IPoint, steps: number): void {
     point.offsetY = point.offsetY + steps;
   }
 
-  _pointLeft(point: Point, steps: number): void {
+  _pointLeft(point: IPoint, steps: number): void {
     point.offsetX = point.offsetX - steps;
   }
 
-  _pointUp(point: Point, steps: number): void {
+  _pointUp(point: IPoint, steps: number): void {
     point.offsetY = point.offsetY - steps;
   }
 
@@ -282,7 +285,7 @@ export class PlayComponent {
     return !this.shapePattern.gapDetect(
       this._activeBlock,
       { left: 1, top: 0, down: 0, right: 0 },
-      this.board
+      this._board
     );
   }
 
@@ -295,7 +298,7 @@ export class PlayComponent {
     return !this.shapePattern.gapDetect(
       this._activeBlock,
       { left: 0, right: 1, down: 0, top: 0 },
-      this.board
+      this._board
     );
   }
 

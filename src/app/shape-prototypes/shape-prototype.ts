@@ -1,10 +1,10 @@
 import { InjectionToken } from '@angular/core';
-import { Shape } from '../interfaces';
+import { IShape } from '../interfaces';
 
 export abstract class ShapePrototype {
   abstract readonly shapeClassId: string;
   abstract readonly shapePrototypeId: string;
-  abstract getShape(): Shape;
+  abstract getShape(): IShape;
 }
 
 export const SHAPE_PROTOTYPES = new InjectionToken<ShapePrototype[]>(

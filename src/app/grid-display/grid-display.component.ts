@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { Board, Cell } from '../interfaces';
+import { IBoard, ICell } from '../interfaces';
 
 @Component({
   selector: 'app-grid-display',
@@ -18,9 +18,9 @@ export class GridDisplayComponent implements OnInit {
   nCols = 20;
 
   @Input()
-  cells: Cell[] = [];
+  cells: ICell[] = [];
 
-  _board: Board = { nRows: this.nRows, nCols: this.nCols, cells: this.cells };
+  _board: IBoard = { nRows: this.nRows, nCols: this.nCols, cells: this.cells };
 
   _yPercentageScale = d3.scaleLinear().domain([0, this.nRows]).range([0, 100]);
   _xPercentageScale = d3.scaleLinear().domain([0, this.nCols]).range([0, 100]);

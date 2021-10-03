@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { Shape } from '../interfaces';
+import { IShape } from '../interfaces';
 import * as d3 from 'd3';
 import { Observable } from 'rxjs';
 
@@ -19,7 +19,7 @@ export class ShapeViewComponent {
   cellLabelFontSize = 12;
 
   @Input()
-  shape!: Shape;
+  shape!: IShape;
 
   _height = 0;
   _width = 0;
