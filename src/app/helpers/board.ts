@@ -17,6 +17,12 @@ export class Board implements IBoard {
     public readonly cells: Cell[]
   ) {}
 
+  /** 重置 */
+  public reset(): void {
+    const nCells = this.cells.length;
+    this.cells.splice(0, nCells);
+  }
+
   /** 棋盘更新事件 */
   public cellUpdate = new Subject<Board>();
 

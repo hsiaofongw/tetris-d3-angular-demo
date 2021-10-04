@@ -71,6 +71,11 @@ export class TetrisPlayComponent {
     private tickGenerator: TickGenerator,
   ) {}
 
+  _reset(): void {
+    this._activeBlock = undefined;
+    this.board.reset();
+  }
+
   /** 尝试消去整行的块 */
   _tryEliminate(): void {
     const cellsGroupByRows: ICell[][] = [];
@@ -101,6 +106,8 @@ export class TetrisPlayComponent {
   }
 
   ngOnInit(): void {
+    this._reset();
+
     this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
       if (e instanceof KeyboardEvent) {
         this._handleKeyUp(e.key);
