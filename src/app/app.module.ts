@@ -11,6 +11,8 @@ import { GithubOauthRedirectBackComponent } from './github-oauth-redirect-back/g
 import { Board, GAME_BOARD } from './helpers/board';
 import { Cell } from './helpers/cell';
 import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module';
+import { TickGenerator } from './ticks/tick-generator';
+import { FastTickGenerator } from './ticks/fast-tick-generator';
 
 @NgModule({
   declarations: [
@@ -28,6 +30,10 @@ import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module
       provide: GAME_BOARD,
       useFactory: () =>
         Board.create({ nCols: 20, nRows: 20, cells: new Array<Cell>() }),
+    },
+    {
+      provide: TickGenerator,
+      useClass: FastTickGenerator,
     },
   ],
   bootstrap: [AppComponent],
