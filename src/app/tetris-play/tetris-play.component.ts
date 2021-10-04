@@ -52,6 +52,8 @@ export class TetrisPlayComponent {
 
   _tickTimer?: number;
 
+  _isPaused = false;
+
   get nRows(): number {
     return this.board.nRows;
   }
@@ -113,6 +115,7 @@ export class TetrisPlayComponent {
     this._registerKeyUpProcedure('ArrowLeft', () => this._handleAKeyUp());
     this._registerKeyUpProcedure('ArrowRight', () => this._handleDKeyUp());
     this._registerKeyUpProcedure('ArrowDown', () => this._handleSKeyUp());
+    this._registerKeyUpProcedure(' ', () => this._handleSpaceKeyUp());
 
     this._startTicking();
   }
@@ -121,6 +124,11 @@ export class TetrisPlayComponent {
     const tick = this.tickGenerator.getTick();
 
     const tickInitiator = () => {
+      if (this._isPaused) {
+        window.setTimeout(() => tickInitiator(), 0);
+        return;
+      }
+
       this._doItOnTick();
       tick(() => tickInitiator());
     };
@@ -136,10 +144,8 @@ export class TetrisPlayComponent {
     }
   }
 
-  _stopTicking(): void {
-    if (this._tickTimer) {
-      window.clearTimeout(this._tickTimer);
-    }
+  _handleSpaceKeyUp(): void {
+    this._isPaused = !this._isPaused;
   }
 
   _handleSKeyUp(): void {
@@ -336,7 +342,6 @@ export class TetrisPlayComponent {
   }
 
   ngOnDestroy(): void {
-    this._stopTicking();
     this._keyUpSubscription?.unsubscribe();
   }
 }
