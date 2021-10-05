@@ -98,12 +98,30 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
 
   /** 重置游戏状态 */
   _reset(): void {
-    this._activeBlock = undefined;
-    this.board.reset();
+    this._clearAllBlocks(() => {
+      this._activeBlock = undefined;
+      this.board.reset();
+      if (this.gridDisplay !== undefined) {
+        this._d3Update();
+      }
+      this._blocks = new Array<Block>();
+    });
+  }
+
+  /** 清空所有方块 */
+  _clearAllBlocks(onComplete: () => void): void {
+    if (this._blocks.length === 0) {
+      onComplete();
+      return;
+    }
+
+    const _block = this._blocks.shift() as Block;
+    this.board.detachBlock(_block);
     if (this.gridDisplay !== undefined) {
       this._d3Update();
     }
-    this._blocks = new Array<Block>();
+
+    window.setTimeout(() => this._clearAllBlocks(() => onComplete()), 0);
   }
 
   /** 让所有方块做自由落体 */
@@ -122,7 +140,7 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
       return;
     }
 
-    blocksInAir.forEach(block => {
+    blocksInAir.forEach((block) => {
       block.down();
       this._d3Update();
     });
