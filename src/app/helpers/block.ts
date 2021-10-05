@@ -78,4 +78,12 @@ export class Block implements IBlock {
 
     return Block.create(cells);
   }
+
+  /** 删除 cell */
+  public deleteCell(cellId: string): void {
+    const cellIndex = this.cells.findIndex(_cell => _cell.id === cellId);
+    if (cellIndex !== -1) {
+      this.cells.splice(cellIndex, 1);
+    }
+  }
 }

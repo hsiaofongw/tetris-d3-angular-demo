@@ -17,13 +17,17 @@ import {
   ShapePrototype,
   SHAPE_PROTOTYPES,
 } from '../shape-prototypes/shape-prototype';
+import { RespondToTick, TickSource } from '../tick-sources/tick-source.service';
+import { TickGenerator } from '../ticks/tick-generator';
 
 @Component({
   selector: 'app-tetris-debug',
   templateUrl: './tetris-debug.component.html',
   styleUrls: ['./tetris-debug.component.scss'],
 })
-export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
+export class TetrisDebugComponent
+  implements GameBoxControl<GameBoxEvent>, RespondToTick
+{
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
   _scores = 0;
@@ -32,6 +36,7 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
   _keyUpProcedure: { [key: string]: () => void } = {};
   _tickTimer?: number;
   _blocks: Block[] = [];
+  _isPaused = true;
 
   get nRows(): number {
     return this.board.nRows;
@@ -49,7 +54,8 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     private shapePattern: ShapePatternDetectAndRotate,
     private barrierDetectService: BarrierDetectService,
     private eventSource: KeyboardEventSource,
-    private eventDispatcher: GameBoxControlEventsDispatcher
+    private eventDispatcher: GameBoxControlEventsDispatcher,
+    private tickSource: TickSource
   ) {}
 
   onGameBoxUp(): void {
@@ -80,7 +86,9 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     this._addRandomBlockToScreen();
   }
 
-  onGameBoxPause(): void {}
+  onGameBoxTogglePause(): void {
+    this._isPaused = !this._isPaused;
+  }
 
   onGameBoxDelete(): void {
     if (this._activeBlock) {
@@ -176,37 +184,86 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
 
   /** 尝试消去整行的块 */
   _tryEliminate(): void {
-    const cellsGroupByRows: ICell[][] = [];
-    for (let i = 0; i < this.board.nRows; i++) {
-      cellsGroupByRows.push(
-        this._cells.filter((_cell) => _cell.point.offsetY === i)
+    for (let rowIdx = 0; rowIdx < this.nRows; rowIdx++) {
+      const cells = this.board.cells.filter(
+        (cell) => cell.point.offsetY === rowIdx
       );
-    }
+      if (cells.length === this.nCols) {
+        cells.forEach((cell) => {
+          this.board.deleteCell(cell.id);
+          this._blocks.forEach((_block) => _block.deleteCell(cell.id));
+        });
+        this._d3Update();
+        this._scores += this.nCols;
 
-    const cellIds = new Set<string>();
-    for (let i = 0; i < this.board.nRows; i++) {
-      const row = cellsGroupByRows[i];
-      if (row.length === this.board.nCols) {
-        for (const cell of row) {
-          cellIds.add(cell.id);
-        }
-
-        this._cells
-          .filter((_cell) => _cell.point.offsetY < i)
-          .forEach((_cell) => _cell.down());
+        this.board.cells
+          .filter((cell) => cell.point.offsetY < rowIdx)
+          .forEach((cell) => cell.down());
+        this._d3Update();
       }
     }
 
-    for (const id of cellIds) {
-      this.board.deleteCell(id);
-    }
-    this._scores += cellIds.size;
+    this._prune();
+    this._scores += this.nCols;
   }
 
   ngOnInit(): void {
     this.eventSource.plug(this.eventDispatcher);
     this.eventDispatcher.plug<GameBoxEvent>(this);
+    this.tickSource.plug(this);
     this._reset();
+  }
+
+  /** 删除所有空的 block */
+  _prune(): void {
+    const emptyBlockIds = this._blocks
+      .filter((_block) => _block.cells.length === 0)
+      .map((_block) => _block.id);
+    emptyBlockIds.forEach((_blockId) => {
+      const _blockIndex = this._blocks.findIndex(
+        (_block) => _block.id === _blockId
+      );
+      if (_blockIndex !== -1) {
+        this._blocks.splice(_blockIndex, 1);
+      }
+    });
+  }
+
+  tick(): Promise<void> {
+    return new Promise((resolve) => {
+      const todo = () => {
+        
+        if (this._isPaused) {
+          window.setTimeout(() => todo(), 0);
+          return;
+        }
+
+        if (this._activeBlock === undefined) {
+          this._addRandomBlockToScreen();
+          resolve();
+          return;
+        }
+  
+        const activeBlock = this._activeBlock;
+        const canMove = this.barrierDetectService.canMove({
+          move: { direction: 'down', steps: 1 },
+          block: activeBlock,
+          board: this.board,
+        });
+        if (canMove) {
+          activeBlock.down();
+          this._d3Update();
+          resolve();
+          return;
+        }
+  
+        this._activeBlock = undefined;
+        this._tryEliminate();
+        resolve();
+      };
+
+      todo();
+    });
   }
 
   /** 顺时针 90 度旋转 */

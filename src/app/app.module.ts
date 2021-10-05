@@ -17,6 +17,7 @@ import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
 import { KeyboardEventSource, KEYBOARD_EVENT_OBSERVABLE } from './controller/keyboard-event-source.service';
 import { fromEvent, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { TickSource, TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL } from './tick-sources/tick-source.service';
 
 @NgModule({
   declarations: [
@@ -50,7 +51,10 @@ import { filter } from 'rxjs/operators';
       provide: KeyboardEventSource,
       useFactory: (event$: Observable<KeyboardEvent>) => new KeyboardEventSource(event$),
       deps: [KEYBOARD_EVENT_OBSERVABLE]
-    }
+    },
+    {
+      provide: TICK_SOURCE_MINIMUM_INTERVAL, useValue: 500,
+    },
   ],
   bootstrap: [AppComponent],
 })

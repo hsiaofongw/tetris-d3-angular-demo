@@ -15,7 +15,7 @@ export type GameBoxEvent =
   | 'right'
   | 'reset'
   | 'new'
-  | 'pause'
+  | 'togglePause'
   | 'delete'
   | 'fall'
   | 'activeBlockFall';
@@ -34,7 +34,7 @@ export class GameBoxControlEventsDispatcher {
     a: 'left',
     s: 'down',
     d: 'right',
-    ' ': 'pause',
+    ' ': 'togglePause',
     k: 'up',
     r: 'reset',
     n: 'new',
