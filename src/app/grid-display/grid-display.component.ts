@@ -1,4 +1,12 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import * as d3 from 'd3';
 import { Cell } from '../helpers/cell';
 import { IBoard, ICell } from '../interfaces';
@@ -36,7 +44,7 @@ export class GridDisplayComponent implements OnInit {
   public update(): void {
     d3.select(this._svgElementRef.nativeElement)
       .selectAll('rect')
-      .data(this.cells)
+      .data(this.cells, function keyFn(datum) { return (datum as Cell).id; })
       .join(
         (enter) =>
           enter
@@ -50,9 +58,11 @@ export class GridDisplayComponent implements OnInit {
             .on('click', (_, d) => this.onCellClick.emit(d as Cell)),
         (update) =>
           update
+            .transition()
+            .duration(150)
             .attr('x', (d) => `${this._xPercentageScale(d.point.offsetX)}%`)
             .attr('y', (d) => `${this._yPercentageScale(d.point.offsetY)}%`),
-        (exit) => exit.remove()
+        (exit) => exit.transition().duration(150).style('opacity','0').remove()
       );
   }
 }
