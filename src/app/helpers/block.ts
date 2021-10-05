@@ -50,13 +50,13 @@ export class Block implements IBlock {
   /** 获取几何信息 */
   public getGeometry(): IGeometry {
     const geometry: IGeometry = { offsetX: 0, offsetY: 0, width: 0, height: 0 };
-    geometry.offsetX = d3.min(this.cells, (cell) => cell.point.offsetX) ?? -1;
-    geometry.offsetY = d3.min(this.cells, (cell) => cell.point.offsetY) ?? -1;
-    const maxX = d3.max(this.cells, (cell) => cell.point.offsetX) ?? -1;
-    const maxY = d3.max(this.cells, (cell) => cell.point.offsetY) ?? -1;
+    geometry.offsetX = d3.min(this.cells, (cell) => cell.point.offsetX) as number;
+    geometry.offsetY = d3.min(this.cells, (cell) => cell.point.offsetY) as number;
+    const maxX = d3.max(this.cells, (cell) => cell.point.offsetX) as number;
+    const maxY = d3.max(this.cells, (cell) => cell.point.offsetY) as number;
 
-    geometry.width = maxX - geometry.offsetX;
-    geometry.height = maxY - geometry.offsetY;
+    geometry.width = maxX - geometry.offsetX + 1;
+    geometry.height = maxY - geometry.offsetY + 1;
 
     return geometry;
   }

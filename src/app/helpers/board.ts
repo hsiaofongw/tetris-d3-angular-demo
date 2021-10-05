@@ -44,8 +44,9 @@ export class Board implements IBoard {
     return undefined;
   }
 
-  /** 在此棋盘中，对于一个给的多 block, 查询是否超出棋盘范围 */
+  /** 在此棋盘中，对于一个给定的 block, 查询是否超出棋盘范围 */
   public isOutOfRange(block: Block): boolean {
+
     for (const cell of block.cells) {
       if (cell.point.offsetX < 0 || cell.point.offsetX >= this.nCols) {
         return true;
@@ -61,6 +62,7 @@ export class Board implements IBoard {
 
   /** 在此棋盘中，对于一个给定的 block, 查询是否有其他 block 的 cell 与它重叠 */
   public isOverlap(block: Block): boolean {
+
     for (const cell of block.cells) {
       const cellQueryResult = this.queryCell(cell.point);
       if (

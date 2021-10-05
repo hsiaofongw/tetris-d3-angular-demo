@@ -1,5 +1,5 @@
-import { Block } from "./helpers/block";
-import { Board } from "./helpers/board";
+import { Block } from './helpers/block';
+import { Board } from './helpers/board';
 
 export type IPoint = { offsetX: number; offsetY: number };
 export type IShape = IPoint[];
@@ -29,23 +29,26 @@ export type IBoard = { nRows: number; nCols: number; cells: ICell[] };
 
 export type IMoveDetectOption = {
   move: IBlockMove;
-  block: IBlock;
-  board: IBoard;
+  block: Block;
+  board: Board;
 };
 
 export type IGapDetectOption = { block: Block; board: Board };
 
 /** 用于描述一个 block 的几何性质 */
-export type IGeometry = { 
+export type IGeometry = {
   /** 左上角的块的位置 x */
-  offsetX: number; 
-  
+  offsetX: number;
+
   /** 左上角的块的位置 y */
-  offsetY: number; 
-  
+  offsetY: number;
+
   /** 包围这个块的最小矩形的宽度 */
-  width: number; 
-  
+  width: number;
+
   /** 包围这个块的最小矩形的高度 */
-  height: number; 
+  height: number;
 };
+
+/** 判断一个 block 周围是否有足够多多 gap */
+export type IFreeGapDetectOption = { block: Block; board: Board; gap: IGap };

@@ -172,7 +172,7 @@ export class TetrisPlayComponent {
   }
 
   private _rotate(): void {
-    // window.console.log('pressed rotate key');
+    // 'pressed rotate key');
     // 如果没有 activeBlock 则不 rotate
     if (!this._activeBlock) {
       return;
@@ -180,12 +180,12 @@ export class TetrisPlayComponent {
 
     // 如果 rotate 不了则不 rotate
     if (!this.shapePattern.canRotate(this._activeBlock, this.board)) {
-      // window.console.log('cant rotate')
+      // 'cant rotate')
       return;
     }
 
     // 可以 rotate
-    // window.console.log('ok to rotate');
+    // 'ok to rotate');
     this.shapePattern.rotate(this._activeBlock, this.board);
     this._d3Update();
   }

@@ -1,18 +1,13 @@
-
 import { Component, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
+import { BarrierDetectService } from '../barrier-detect.service';
 import { GridDisplayComponent } from '../grid-display/grid-display.component';
 import { Block } from '../helpers/block';
 import { Board, GAME_BOARD } from '../helpers/board';
 import { Cell } from '../helpers/cell';
 import { Point } from '../helpers/point';
-import {
-  IBlockMove,
-  IBoundingBox,
-  ICell,
-  IShape,
-} from '../interfaces';
+import { IBlockMove, IBoundingBox, ICell, IGap, IShape } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
 import {
   ShapePrototype,
@@ -23,10 +18,9 @@ import { TickGenerator } from '../ticks/tick-generator';
 @Component({
   selector: 'app-tetris-debug',
   templateUrl: './tetris-debug.component.html',
-  styleUrls: ['./tetris-debug.component.scss']
+  styleUrls: ['./tetris-debug.component.scss'],
 })
 export class TetrisDebugComponent {
-
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
   tickPeriodMs = 500;
@@ -71,7 +65,7 @@ export class TetrisDebugComponent {
     @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
     @Inject(GAME_BOARD) private board: Board,
     private shapePattern: ShapePatternDetectAndRotate,
-    private tickGenerator: TickGenerator,
+    private barrierDetectService: BarrierDetectService
   ) {}
 
   _reset(): void {
@@ -112,7 +106,7 @@ export class TetrisDebugComponent {
   ngOnInit(): void {
     this._reset();
 
-    fromEvent(document, 'keydown').subscribe(e => {
+    fromEvent(document, 'keydown').subscribe((e) => {
       if (e instanceof KeyboardEvent && e.key === 'Tab') {
         e.preventDefault();
       }
@@ -120,9 +114,6 @@ export class TetrisDebugComponent {
 
     this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
       if (e instanceof KeyboardEvent) {
-        e.preventDefault();
-        e.stopPropagation();
-        window.console.log(e);
         this._handleKeyUp(e.key);
       }
     });
@@ -139,9 +130,13 @@ export class TetrisDebugComponent {
     this._registerKeyUpProcedure('r', () => this._reset());
     this._registerKeyUpProcedure('n', () => this._addRandomBlockToScreen());
     this._registerKeyUpProcedure('k', () => this._activeBlockMoveUpStep());
-    this._registerKeyUpProcedure('h', () => this._activeIBlockMoveOneLeftStep());
+    this._registerKeyUpProcedure('h', () =>
+      this._activeIBlockMoveOneLeftStep()
+    );
     this._registerKeyUpProcedure('j', () => this._activeIBlockMoveOneStep());
-    this._registerKeyUpProcedure('l', () => this._activeIBlockMoveOneRightStep());
+    this._registerKeyUpProcedure('l', () =>
+      this._activeIBlockMoveOneRightStep()
+    );
     this._registerKeyUpProcedure('Tab', () => this._switchActiveBlockToNext());
   }
 
@@ -224,7 +219,7 @@ export class TetrisDebugComponent {
     const initialBlockOffsetX = getBlockOffsetX();
 
     const cells = shape.map((_point) => Cell.create(Point.create(_point)));
-    cells.forEach(cell => {
+    cells.forEach((cell) => {
       for (let i = 0; i < initialBlockOffsetX; i++) {
         cell.right();
       }
@@ -244,11 +239,11 @@ export class TetrisDebugComponent {
 
   _moveBlock(block: Block, move: IBlockMove): void {
     const handlerMap: { [Property in IBlockMove['direction']]: () => void } = {
-      'left': () => block.cells.forEach(cell => cell.left()),
-      'right': () => block.cells.forEach(cell => cell.right()),
-      'down': () => block.cells.forEach(cell => cell.down()),
-      'up': () => block.cells.forEach(cell => cell.up()),
-    }
+      left: () => block.cells.forEach((cell) => cell.left()),
+      right: () => block.cells.forEach((cell) => cell.right()),
+      down: () => block.cells.forEach((cell) => cell.down()),
+      up: () => block.cells.forEach((cell) => cell.up()),
+    };
     handlerMap[move.direction]();
     this._d3Update();
   }
@@ -314,39 +309,58 @@ export class TetrisDebugComponent {
   }
 
   _activeBlockMoveUpStep(): void {
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'up', steps: 1 });
+    if (
+      this._activeBlock &&
+      this.barrierDetectService.canMove({
+        move: { direction: 'up', steps: 1 },
+        block: this._activeBlock,
+        board: this.board,
+      })
+    ) {
+      this._activeBlock.up();
+      this._d3Update();
     }
   }
 
   _activeIBlockMoveOneLeftStep(): void {
-    if (this._hasBarrierInLeft()) {
-      return;
-    }
-
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'left', steps: 1 });
+    if (
+      this._activeBlock &&
+      this.barrierDetectService.canMove({
+        move: { direction: 'left', steps: 1 },
+        block: this._activeBlock,
+        board: this.board,
+      })
+    ) {
+      this._activeBlock.left();
+      this._d3Update();
     }
   }
 
   _activeIBlockMoveOneRightStep(): void {
-    if (this._hasBarrierInRight()) {
-      return;
-    }
-
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'right', steps: 1 });
+    if (
+      this._activeBlock &&
+      this.barrierDetectService.canMove({
+        move: { direction: 'right', steps: 1 },
+        block: this._activeBlock,
+        board: this.board,
+      })
+    ) {
+      this._activeBlock.right();
+      this._d3Update();
     }
   }
 
   _activeIBlockMoveOneStep(): void {
-    if (this._hasBarrierInBottom()) {
-      this._activeBlock = undefined;
-      return;
-    }
-
-    if (this._activeBlock) {
-      this._moveBlock(this._activeBlock, { direction: 'down', steps: 1 });
+    if (
+      this._activeBlock &&
+      this.barrierDetectService.canMove({
+        move: { direction: 'down', steps: 1 },
+        block: this._activeBlock,
+        board: this.board,
+      })
+    ) {
+      this._activeBlock.down();
+      this._d3Update();
     }
   }
 
@@ -355,20 +369,38 @@ export class TetrisDebugComponent {
   }
 
   handleCellClick(cell: Cell): void {
-    const block = this._blocks.find(_block => _block.id === cell.blockId);
+    const block = this._blocks.find((_block) => _block.id === cell.blockId);
     if (block !== undefined) {
       this._activeBlock = block;
+      this._showFreeGaps();
     }
   }
 
   /** 切换当前 activeBlock 为下一个 */
   _switchActiveBlockToNext(): void {
-    const currentActiveBlockIdx = this._blocks.findIndex(_block => _block.id === this._activeBlock?.id);
+    const currentActiveBlockIdx = this._blocks.findIndex(
+      (_block) => _block.id === this._activeBlock?.id
+    );
     if (currentActiveBlockIdx !== -1) {
       const nextBlockIdx = (currentActiveBlockIdx + 1) % this._blocks.length;
       const nextBlock = this._blocks[nextBlockIdx];
       this._activeBlock = nextBlock;
     }
   }
- 
+
+  _showFreeGaps(): void {
+    if (this._activeBlock !== undefined) {
+      const block = this._activeBlock;
+      const gaps = this.barrierDetectService.gapsDetect({
+        block,
+        board: this.board,
+      });
+      ({
+        board: this.board,
+        block,
+        gaps,
+        geometry: block.getGeometry(),
+      });
+    }
+  }
 }
