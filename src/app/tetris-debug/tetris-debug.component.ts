@@ -2,7 +2,10 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import { BarrierDetectService } from '../barrier-detect.service';
-import { GameBoxControlEventsDispatcher, GameBoxEvent } from '../controller/game-box-control-events-dispatcher.service';
+import {
+  GameBoxControlEventsDispatcher,
+  GameBoxEvent,
+} from '../controller/game-box-control-events-dispatcher.service';
 import { KeyboardEventSource } from '../controller/keyboard-event-source.service';
 import { GridDisplayComponent } from '../grid-display/grid-display.component';
 import { Block } from '../helpers/block';
@@ -10,9 +13,10 @@ import { Board, GAME_BOARD } from '../helpers/board';
 import { Cell } from '../helpers/cell';
 import { GameBoxControl, ICell } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
-import { ShapePrototype, SHAPE_PROTOTYPES } from '../shape-prototypes/shape-prototype';
-
-
+import {
+  ShapePrototype,
+  SHAPE_PROTOTYPES,
+} from '../shape-prototypes/shape-prototype';
 
 @Component({
   selector: 'app-tetris-debug',
@@ -45,7 +49,7 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     private shapePattern: ShapePatternDetectAndRotate,
     private barrierDetectService: BarrierDetectService,
     private eventSource: KeyboardEventSource,
-    private eventDispatcher: GameBoxControlEventsDispatcher,
+    private eventDispatcher: GameBoxControlEventsDispatcher
   ) {}
 
   onGameBoxUp(): void {
@@ -76,15 +80,20 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     this._addRandomBlockToScreen();
   }
 
-  onGameBoxPause(): void {
-  }
+  onGameBoxPause(): void {}
 
   onGameBoxDelete(): void {
     if (this._activeBlock) {
       this.board.detachBlock(this._activeBlock);
-      this._blocks = this._blocks.filter(_block => _block !== this._activeBlock);
+      this._blocks = this._blocks.filter(
+        (_block) => _block !== this._activeBlock
+      );
       this._d3Update();
     }
+  }
+
+  onGameBoxFall(): void {
+    this._fall();
   }
 
   /** 重置游戏状态 */
@@ -94,6 +103,31 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     if (this.gridDisplay !== undefined) {
       this._d3Update();
     }
+    this._blocks = new Array<Block>();
+  }
+
+  /** 让所有方块做自由落体 */
+  _fall(): void {
+    const getBlocksInAir = () =>
+      this._blocks.filter((_block) =>
+        this.barrierDetectService.canMove({
+          move: { direction: 'down', steps: 1 },
+          block: _block,
+          board: this.board,
+        })
+      );
+
+    let blocksInAir = getBlocksInAir();
+    if (blocksInAir.length === 0) {
+      return;
+    }
+
+    blocksInAir.forEach(block => {
+      block.down();
+      this._d3Update();
+    });
+
+    window.setTimeout(() => this._fall(), 0);
   }
 
   /** 尝试消去整行的块 */
@@ -128,7 +162,10 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
   ngOnInit(): void {
     this.eventSource.plug(this.eventDispatcher);
     this.eventDispatcher.plug<GameBoxEvent>(this);
-    window.console.log({eventSource: this.eventSource,dispatcher: this.eventDispatcher})
+    window.console.log({
+      eventSource: this.eventSource,
+      dispatcher: this.eventDispatcher,
+    });
     this._reset();
   }
 

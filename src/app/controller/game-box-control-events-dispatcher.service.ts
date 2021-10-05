@@ -16,7 +16,8 @@ export type GameBoxEvent =
   | 'reset'
   | 'new'
   | 'pause'
-  | 'delete';
+  | 'delete'
+  | 'fall';
 
 type GameBoxEventTable = AbstractGameBoxEventTable<GameBoxEvent>;
 type KeyboardEventMap = Record<string, keyof GameBoxEventTable>;
@@ -40,6 +41,7 @@ export class GameBoxControlEventsDispatcher {
     l: 'right',
     j: 'down',
     e: 'delete',
+    f: 'fall'
   };
 
   public plug<T>(control: GameBoxControl<T>): void {
