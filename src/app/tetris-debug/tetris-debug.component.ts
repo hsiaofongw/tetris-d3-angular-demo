@@ -1,6 +1,6 @@
 import { Component, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { Subscription } from 'rxjs';
+import { fromEvent, Subscription } from 'rxjs';
 import { BarrierDetectService } from '../barrier-detect.service';
 import {
   GameBoxControlEventsDispatcher,
@@ -206,10 +206,26 @@ export class TetrisDebugComponent
   }
 
   ngOnInit(): void {
+    this._muteSpecialKeys();
     this.eventSource.plug(this.eventDispatcher);
     this.eventDispatcher.plug<GameBoxEvent>(this);
     this.tickSource.plug(this);
     this._reset();
+  }
+
+  /** 屏蔽特定功能按键 */
+  _muteSpecialKeys(): void {
+    fromEvent(window.document, 'keydown').subscribe(e => {
+      if (e instanceof KeyboardEvent) {
+        const keysToMute = new Set<string>();
+        keysToMute.add(' ');
+        keysToMute.add('Tab');
+
+        if (keysToMute.has(e.key)) {
+          e.preventDefault();
+        }
+      }
+    });
   }
 
   /** 删除所有空的 block */
