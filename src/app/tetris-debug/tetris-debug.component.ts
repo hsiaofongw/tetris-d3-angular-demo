@@ -6,14 +6,9 @@ import { GridDisplayComponent } from '../grid-display/grid-display.component';
 import { Block } from '../helpers/block';
 import { Board, GAME_BOARD } from '../helpers/board';
 import { Cell } from '../helpers/cell';
-import { Point } from '../helpers/point';
-import { IBlockMove, IBoundingBox, ICell, IGap, IShape } from '../interfaces';
+import { ICell } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
-import {
-  ShapePrototype,
-  SHAPE_PROTOTYPES,
-} from '../shape-prototypes/shape-prototype';
-import { TickGenerator } from '../ticks/tick-generator';
+import { ShapePrototype, SHAPE_PROTOTYPES } from '../shape-prototypes/shape-prototype';
 
 @Component({
   selector: 'app-tetris-debug',
@@ -23,32 +18,11 @@ import { TickGenerator } from '../ticks/tick-generator';
 export class TetrisDebugComponent {
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
-  tickPeriodMs = 500;
-
   _scores = 0;
-
-  __activeBlock?: Block;
-
-  get _activeBlock(): Block | undefined {
-    return this.__activeBlock;
-  }
-
-  set _activeBlock(value: Block | undefined) {
-    this.__activeBlock = value;
-
-    if (value === undefined) {
-      this._tryEliminate();
-    }
-  }
-
+  _activeBlock?: Block;
   _keyUpSubscription?: Subscription;
-
   _keyUpProcedure: { [key: string]: () => void } = {};
-
   _tickTimer?: number;
-
-  _isPaused = false;
-
   _blocks: Block[] = [];
 
   get nRows(): number {
@@ -62,16 +36,19 @@ export class TetrisDebugComponent {
   }
 
   constructor(
-    @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
+    @Inject(SHAPE_PROTOTYPES) private shapeProtos: ShapePrototype[],
     @Inject(GAME_BOARD) private board: Board,
     private shapePattern: ShapePatternDetectAndRotate,
     private barrierDetectService: BarrierDetectService
   ) {}
 
+  /** 重置游戏状态 */
   _reset(): void {
     this._activeBlock = undefined;
     this.board.reset();
-    // this._d3Update();
+    if (this.gridDisplay !== undefined) {
+      this._d3Update();
+    }
   }
 
   /** 尝试消去整行的块 */
@@ -126,7 +103,6 @@ export class TetrisDebugComponent {
     this._registerKeyUpProcedure('ArrowLeft', () => this._handleAKeyUp());
     this._registerKeyUpProcedure('ArrowRight', () => this._handleDKeyUp());
     this._registerKeyUpProcedure('ArrowDown', () => this._handleSKeyUp());
-    this._registerKeyUpProcedure(' ', () => this._handleSpaceKeyUp());
     this._registerKeyUpProcedure('r', () => this._reset());
     this._registerKeyUpProcedure('n', () => this._addRandomBlockToScreen());
     this._registerKeyUpProcedure('k', () => this._activeBlockMoveUpStep());
@@ -138,11 +114,6 @@ export class TetrisDebugComponent {
       this._activeIBlockMoveOneRightStep()
     );
     this._registerKeyUpProcedure('Tab', () => this._switchActiveBlockToNext());
-  }
-
-  /** 响应空格键 */
-  _handleSpaceKeyUp(): void {
-    this._isPaused = !this._isPaused;
   }
 
   /** 响应 S 键和下箭头键 */
@@ -184,130 +155,32 @@ export class TetrisDebugComponent {
     this._keyUpProcedure[key] = fn;
   }
 
-  private _getShapes(): ShapePrototype[] {
-    return this.shapePrototypes;
-  }
-
-  private _getRandomShape(): IShape {
-    const shapes = this._getShapes();
-    const choose = d3.randomInt(0, shapes.length);
-    const chooseShape = shapes[choose()];
-
-    return chooseShape.getShape();
-  }
-
-  private _getBoundingBox(shape: IShape): IBoundingBox {
-    const xOffsets = shape.map((point) => point.offsetX);
-    const yOffsets = shape.map((point) => point.offsetY);
-    const minX = Math.min(...xOffsets);
-    const maxX = Math.max(...xOffsets);
-    const minY = Math.min(...yOffsets);
-    const maxY = Math.max(...yOffsets);
-    return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
-  }
-
+  /** 刷新显示，也就是说让视图和数据同步，或者说就是把数据同步到视图上 */
   private _d3Update(): void {
     this.gridDisplay.update();
   }
 
-  _getRandomBlock() {
-    const shape = this._getRandomShape();
-    const blockBoundingBox = this._getBoundingBox(shape);
-    const blockWidth = blockBoundingBox.width;
-    const maximumAllowXOffset = this.board.nCols - blockWidth;
-    const getBlockOffsetX = d3.randomInt(0, maximumAllowXOffset);
-    const initialBlockOffsetX = getBlockOffsetX();
-
-    const cells = shape.map((_point) => Cell.create(Point.create(_point)));
-    cells.forEach((cell) => {
-      for (let i = 0; i < initialBlockOffsetX; i++) {
-        cell.right();
-      }
-    });
-    const block = Block.create(cells);
-    return block;
-  }
-
-  _addRandomBlockToScreen(): void {
-    const block = this._getRandomBlock();
-    block.cells.forEach((cell) => this.board.addCell(cell));
+  /** 随机产生一个形状随机的 block, 然后把这个刚随机产生的 block 置为 activeBlock */
+  private _addRandomBlockToScreen(): void {
+    const protoIdx = d3.randomInt(0, this.shapeProtos.length)();
+    const proto = this.shapeProtos[protoIdx];
+    const block = this.board.getBlock(proto);
+    this.board.attachBlock(block);
 
     this._d3Update();
     this._activeBlock = block;
     this._blocks.push(block);
   }
 
-  _moveBlock(block: Block, move: IBlockMove): void {
-    const handlerMap: { [Property in IBlockMove['direction']]: () => void } = {
-      left: () => block.cells.forEach((cell) => cell.left()),
-      right: () => block.cells.forEach((cell) => cell.right()),
-      down: () => block.cells.forEach((cell) => cell.down()),
-      up: () => block.cells.forEach((cell) => cell.up()),
-    };
-    handlerMap[move.direction]();
-    this._d3Update();
-  }
-
-  _handleKeyUp(key: string): void {
+  /** 为触发的 keyup 事件寻找响应例程并且执行 */
+  private _handleKeyUp(key: string): void {
     const fn = this._keyUpProcedure[key];
     if (fn !== undefined) {
       fn();
     }
   }
 
-  /** 判断左侧一格空间内是否有障碍物 */
-  _hasBarrierInLeft(): boolean {
-    if (!this._activeBlock) {
-      return false;
-    }
-
-    return !this.shapePattern.gapDetect(
-      this._activeBlock,
-      { left: 1, top: 0, down: 0, right: 0 },
-      this.board
-    );
-  }
-
-  /** 判断右侧一格空间内是否有障碍物 */
-  _hasBarrierInRight(): boolean {
-    if (!this._activeBlock) {
-      return false;
-    }
-
-    return !this.shapePattern.gapDetect(
-      this._activeBlock,
-      { left: 0, right: 1, down: 0, top: 0 },
-      this.board
-    );
-  }
-
-  _hasBarrierInBottom(): boolean {
-    if (!this._activeBlock) {
-      return false;
-    }
-
-    const cells = this._activeBlock.cells;
-    const box = this._getBoundingBox(cells.map((cell) => cell.point));
-
-    for (const cell of cells) {
-      for (const _cell of this._cells) {
-        if (
-          _cell.blockId !== this._activeBlock.id &&
-          _cell.point.offsetX === cell.point.offsetX &&
-          _cell.point.offsetY === cell.point.offsetY + 1
-        ) {
-          return true;
-        }
-      }
-    }
-
-    if (box.maxY === this.board.nRows - 1) {
-      return true;
-    }
-
-    return false;
-  }
-
+  /** 尝试将当前 activeBlock 向上移动一个单位，一般仅在 debug 模式进行此操作 */
   _activeBlockMoveUpStep(): void {
     if (
       this._activeBlock &&
@@ -322,6 +195,7 @@ export class TetrisDebugComponent {
     }
   }
 
+  /** 尝试将当前 activeBlock 向左移动一个单位 */
   _activeIBlockMoveOneLeftStep(): void {
     if (
       this._activeBlock &&
@@ -336,6 +210,7 @@ export class TetrisDebugComponent {
     }
   }
 
+  /** 尝试将当前 activeBlock 向右移动一个单位 */
   _activeIBlockMoveOneRightStep(): void {
     if (
       this._activeBlock &&
@@ -350,6 +225,7 @@ export class TetrisDebugComponent {
     }
   }
 
+  /** 尝试将当前 activeBlock 向下移动一个单位 */
   _activeIBlockMoveOneStep(): void {
     if (
       this._activeBlock &&
@@ -368,7 +244,8 @@ export class TetrisDebugComponent {
     this._keyUpSubscription?.unsubscribe();
   }
 
-  handleCellClick(cell: Cell): void {
+  /** 响应鼠标点击 cell 事件 */
+  public handleCellClick(cell: Cell): void {
     const block = this._blocks.find((_block) => _block.id === cell.blockId);
     if (block !== undefined) {
       this._activeBlock = block;
@@ -377,7 +254,7 @@ export class TetrisDebugComponent {
   }
 
   /** 切换当前 activeBlock 为下一个 */
-  _switchActiveBlockToNext(): void {
+  private _switchActiveBlockToNext(): void {
     const currentActiveBlockIdx = this._blocks.findIndex(
       (_block) => _block.id === this._activeBlock?.id
     );
@@ -388,7 +265,8 @@ export class TetrisDebugComponent {
     }
   }
 
-  _showFreeGaps(): void {
+  /** 在控制台打印当前 activeBlock 四个方向上的空余空间有多少 */
+  private _showFreeGaps(): void {
     if (this._activeBlock !== undefined) {
       const block = this._activeBlock;
       const gaps = this.barrierDetectService.gapsDetect({

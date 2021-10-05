@@ -1,8 +1,9 @@
 import { InjectionToken } from '@angular/core';
+import * as d3 from 'd3';
 import { Subject } from 'rxjs';
 import { IBoard } from '../interfaces';
+import { ShapePrototype } from '../shape-prototypes/shape-prototype';
 import { Block } from './block';
-import { CachedQuery } from './cache';
 import { Cell } from './cell';
 import { Point } from './point';
 
@@ -101,6 +102,22 @@ export class Board implements IBoard {
   /** 加载一个 block */
   public attachBlock(block: Block): void {
     block.cells.forEach(cell => this.addCell(cell));
+  }
+
+  /** 在当前的 board 上产生一个 block */
+  public getBlock(shapeProto: ShapePrototype): Block {
+    const shape = shapeProto.getShape();
+    const points = shape.map(p => Point.create(p));
+    const cells = points.map(p => Cell.create(p));
+    const block = Block.create(cells);
+    const geometry = block.getGeometry();
+    const maxStepsAllowToMoveRight = this.nCols - (geometry.offsetX + geometry.width);
+    const stepsToMove = d3.randomInt(0, maxStepsAllowToMoveRight+1)();
+    for (let step = 0; step < stepsToMove; step++) {
+      block.right();
+    }
+
+    return block;
   }
 
 }
