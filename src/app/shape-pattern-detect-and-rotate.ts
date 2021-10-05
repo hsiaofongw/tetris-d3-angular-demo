@@ -1,4 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
+import { BarrierDetectService } from './barrier-detect.service';
+import { Block } from './helpers/block';
+import { Board } from './helpers/board';
 import { IBlock, IBoard, IGap, IPoint, IShape } from './interfaces';
 import {
   ShapePrototype,
@@ -78,7 +81,8 @@ export class ShapePatternDetectAndRotate {
   };
 
   constructor(
-    @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[]
+    @Inject(SHAPE_PROTOTYPES) private shapePrototypes: ShapePrototype[],
+    private barrierDetectService: BarrierDetectService
   ) {}
 
   /** 判断当前 shape 是属于哪个 pattern */
@@ -97,7 +101,10 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 判断一个 shape 能否通过平移到达另一个 shape */
-  public canOneShapeTranslateToAnothor(shape1: IShape, shape2: IShape): boolean {
+  public canOneShapeTranslateToAnothor(
+    shape1: IShape,
+    shape2: IShape
+  ): boolean {
     if (shape1.length !== shape2.length) {
       return false;
     }
@@ -131,87 +138,24 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 判断一个 block 周围是否有足够的空间 */
-  public gapDetect(block: IBlock, gap: IGap, board: IBoard): boolean {
-    const otherCells = board.cells.filter(
-      (_cell) => _cell.blockId !== block.id
-    );
-    const shape = block.cells.map((cell) => cell.point);
-    const minX = Math.min(...shape.map((p) => p.offsetX));
-    const maxX = Math.max(...shape.map((p) => p.offsetX));
-    const minY = Math.min(...shape.map((p) => p.offsetY));
-    const maxY = Math.max(...shape.map((p) => p.offsetY));
-    for (const cell of block.cells) {
-      // 判断下方障碍物
-      for (let y = cell.point.offsetY; y <= maxY + gap.down; y++) {
-        if (y >= board.nRows) {
-          return false;
-        }
-
-        const barrierCells = otherCells
-          .filter((_cell) => _cell.point.offsetX === cell.point.offsetX)
-          .filter((_cell) => _cell.point.offsetY === y);
-
-        if (barrierCells.length > 0) {
-          return false;
-        }
-      }
-
-      // 判断上方障碍物
-      for (let y = cell.point.offsetY; y >= minY - gap.top; y--) {
-        if (y < 0) {
-          return false;
-        }
-
-        const barrierCells = otherCells
-          .filter((_cell) => _cell.point.offsetX === cell.point.offsetX)
-          .filter((_cell) => _cell.point.offsetY === y);
-        if (barrierCells.length > 0) {
-          return false;
-        }
-      }
-
-      // 判断右边的障碍物
-      for (let x = cell.point.offsetX; x <= maxX + gap.right; x++) {
-        if (x >= board.nCols) {
-          return false;
-        }
-
-        const barrierCells = otherCells
-          .filter((_cell) => _cell.point.offsetY === cell.point.offsetY)
-          .filter((_cell) => _cell.point.offsetX === x);
-        if (barrierCells.length > 0) {
-          return false;
-        }
-      }
-
-      // 判断左边的障碍物
-      for (let x = cell.point.offsetX; x >= minX - gap.left; x--) {
-        if (x < 0) {
-          return false;
-        }
-
-        const barrierCells = otherCells
-          .filter((_cell) => _cell.point.offsetY === cell.point.offsetY)
-          .filter((_cell) => _cell.point.offsetX === x);
-        if (barrierCells.length > 0) {
-          return false;
-        }
-      }
-    }
-
-    return true;
+  public gapDetect(block: Block, gap: IGap, board: Board): boolean {
+    return this.barrierDetectService.freeGapDetect({ block, board, gap });
   }
 
   /** 判断一个 block 是否具备 rotate 的条件 */
-  public canRotate(block: IBlock, board: IBoard): boolean {
-    const pattern = this.detectPattern(block.cells.map(cell => cell.point));
+  public canRotate(block: Block, board: Board): boolean {
+    const pattern = this.detectPattern(block.cells.map((cell) => cell.point));
 
     if (!pattern) {
+      window.console.log({ canRotate: 'No pattern detected' });
       return false;
     }
 
     const gapRequire = this.gapRequres[pattern];
     if (!gapRequire) {
+      window.console.log({
+        canRotate: 'Cant figure it out how many gap required',
+      });
       return false;
     }
 
@@ -224,7 +168,9 @@ export class ShapePatternDetectAndRotate {
 
   /** 进行 rotate */
   public rotate(block: IBlock, board: IBoard): void {
-    const currentPattern = this.detectPattern(block.cells.map(cell => cell.point));
+    const currentPattern = this.detectPattern(
+      block.cells.map((cell) => cell.point)
+    );
     if (!currentPattern) {
       return;
     }
@@ -234,12 +180,16 @@ export class ShapePatternDetectAndRotate {
       return;
     }
 
-    const rotateToShape = this.shapePrototypes.find(shapeProto => shapeProto.shapePrototypeId === rotateToPattern);
+    const rotateToShape = this.shapePrototypes.find(
+      (shapeProto) => shapeProto.shapePrototypeId === rotateToPattern
+    );
     if (!rotateToShape) {
       return;
     }
 
-    const currentShape = this.shapePrototypes.find(shapeProto => shapeProto.shapePrototypeId === currentPattern);
+    const currentShape = this.shapePrototypes.find(
+      (shapeProto) => shapeProto.shapePrototypeId === currentPattern
+    );
     if (!currentShape) {
       return;
     }
@@ -263,6 +213,5 @@ export class ShapePatternDetectAndRotate {
       block.cells[i].point.offsetX += deltas[i].offsetX;
       block.cells[i].point.offsetY += deltas[i].offsetY;
     }
-
   }
 }
