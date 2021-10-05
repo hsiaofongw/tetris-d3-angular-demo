@@ -1,6 +1,6 @@
 import { Component, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { fromEvent, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { BarrierDetectService } from '../barrier-detect.service';
 import {
   GameBoxControlEventsDispatcher,
@@ -11,14 +11,13 @@ import { GridDisplayComponent } from '../grid-display/grid-display.component';
 import { Block } from '../helpers/block';
 import { Board, GAME_BOARD } from '../helpers/board';
 import { Cell } from '../helpers/cell';
-import { GameBoxControl, ICell } from '../interfaces';
+import { GameBoxControl } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
 import {
   ShapePrototype,
   SHAPE_PROTOTYPES,
 } from '../shape-prototypes/shape-prototype';
 import { RespondToTick, TickSource } from '../tick-sources/tick-source.service';
-import { TickGenerator } from '../ticks/tick-generator';
 
 @Component({
   selector: 'app-tetris-debug',
@@ -36,7 +35,7 @@ export class TetrisDebugComponent
   _keyUpProcedure: { [key: string]: () => void } = {};
   _tickTimer?: number;
   _blocks: Block[] = [];
-  _isPaused = true;
+  _isPaused = false;
 
   get nRows(): number {
     return this.board.nRows;
@@ -204,7 +203,6 @@ export class TetrisDebugComponent
     }
 
     this._prune();
-    this._scores += this.nCols;
   }
 
   ngOnInit(): void {
@@ -282,7 +280,9 @@ export class TetrisDebugComponent
 
   /** 刷新显示，也就是说让视图和数据同步，或者说就是把数据同步到视图上 */
   private _d3Update(): void {
-    this.gridDisplay.update();
+    if (this.gridDisplay) {
+      this.gridDisplay.update();
+    }
   }
 
   /** 随机产生一个形状随机的 block, 然后把这个刚随机产生的 block 置为 activeBlock */
