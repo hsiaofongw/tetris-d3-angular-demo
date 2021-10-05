@@ -14,6 +14,9 @@ import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module
 import { TickGenerator } from './ticks/tick-generator';
 import { FastTickGenerator } from './ticks/fast-tick-generator';
 import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
+import { KeyboardEventSource, KEYBOARD_EVENT_OBSERVABLE } from './controller/keyboard-event-source.service';
+import { fromEvent, Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @NgModule({
   declarations: [
@@ -37,6 +40,17 @@ import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
       provide: TickGenerator,
       useClass: FastTickGenerator,
     },
+    {
+      provide: KEYBOARD_EVENT_OBSERVABLE,
+      useValue: fromEvent(window.document, 'keyup').pipe(
+        filter((e) => e instanceof KeyboardEvent)
+      ) as Observable<KeyboardEvent>,
+    },
+    {
+      provide: KeyboardEventSource,
+      useFactory: (event$: Observable<KeyboardEvent>) => new KeyboardEventSource(event$),
+      deps: [KEYBOARD_EVENT_OBSERVABLE]
+    }
   ],
   bootstrap: [AppComponent],
 })

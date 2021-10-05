@@ -2,20 +2,24 @@ import { Component, Inject, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
 import { fromEvent, Subscription } from 'rxjs';
 import { BarrierDetectService } from '../barrier-detect.service';
+import { GameBoxControlEventsDispatcher, GameBoxEvent } from '../controller/game-box-control-events-dispatcher.service';
+import { KeyboardEventSource } from '../controller/keyboard-event-source.service';
 import { GridDisplayComponent } from '../grid-display/grid-display.component';
 import { Block } from '../helpers/block';
 import { Board, GAME_BOARD } from '../helpers/board';
 import { Cell } from '../helpers/cell';
-import { ICell } from '../interfaces';
+import { GameBoxControl, ICell } from '../interfaces';
 import { ShapePatternDetectAndRotate } from '../shape-pattern-detect-and-rotate';
 import { ShapePrototype, SHAPE_PROTOTYPES } from '../shape-prototypes/shape-prototype';
+
+
 
 @Component({
   selector: 'app-tetris-debug',
   templateUrl: './tetris-debug.component.html',
   styleUrls: ['./tetris-debug.component.scss'],
 })
-export class TetrisDebugComponent {
+export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
   _scores = 0;
@@ -39,8 +43,41 @@ export class TetrisDebugComponent {
     @Inject(SHAPE_PROTOTYPES) private shapeProtos: ShapePrototype[],
     @Inject(GAME_BOARD) private board: Board,
     private shapePattern: ShapePatternDetectAndRotate,
-    private barrierDetectService: BarrierDetectService
+    private barrierDetectService: BarrierDetectService,
+    private eventSource: KeyboardEventSource,
+    private eventDispatcher: GameBoxControlEventsDispatcher,
   ) {}
+
+  onGameBoxUp(): void {
+    this._activeBlockMoveUpStep();
+  }
+
+  onGameBoxRotate(): void {
+    this._rotate();
+  }
+
+  onGameBoxDown(): void {
+    this._activeBlockMoveDownOneStep();
+  }
+
+  onGameBoxLeft(): void {
+    this._activeBlockMoveOneLeftStep();
+  }
+
+  onGameBoxRight(): void {
+    this._activeBlockMoveOneRightStep();
+  }
+
+  onGameBoxReset(): void {
+    this._reset();
+  }
+
+  onGameBoxNew(): void {
+    this._addRandomBlockToScreen();
+  }
+
+  onGameBoxPause(): void {
+  }
 
   /** 重置游戏状态 */
   _reset(): void {
@@ -81,59 +118,10 @@ export class TetrisDebugComponent {
   }
 
   ngOnInit(): void {
+    this.eventSource.plug(this.eventDispatcher);
+    this.eventDispatcher.plug<GameBoxEvent>(this);
+    window.console.log({eventSource: this.eventSource,dispatcher: this.eventDispatcher})
     this._reset();
-
-    fromEvent(document, 'keydown').subscribe((e) => {
-      if (e instanceof KeyboardEvent && e.key === 'Tab') {
-        e.preventDefault();
-      }
-    });
-
-    this._keyUpSubscription = fromEvent(document, 'keyup').subscribe((e) => {
-      if (e instanceof KeyboardEvent) {
-        this._handleKeyUp(e.key);
-      }
-    });
-
-    this._registerKeyUpProcedure('s', () => this._handleSKeyUp());
-    this._registerKeyUpProcedure('a', () => this._handleAKeyUp());
-    this._registerKeyUpProcedure('d', () => this._handleDKeyUp());
-    this._registerKeyUpProcedure('w', () => this._handleWKeyUp());
-    this._registerKeyUpProcedure('ArrowUp', () => this._handleWKeyUp());
-    this._registerKeyUpProcedure('ArrowLeft', () => this._handleAKeyUp());
-    this._registerKeyUpProcedure('ArrowRight', () => this._handleDKeyUp());
-    this._registerKeyUpProcedure('ArrowDown', () => this._handleSKeyUp());
-    this._registerKeyUpProcedure('r', () => this._reset());
-    this._registerKeyUpProcedure('n', () => this._addRandomBlockToScreen());
-    this._registerKeyUpProcedure('k', () => this._activeBlockMoveUpStep());
-    this._registerKeyUpProcedure('h', () =>
-      this._activeBlockMoveOneLeftStep()
-    );
-    this._registerKeyUpProcedure('j', () => this._activeBlockMoveDownOneStep());
-    this._registerKeyUpProcedure('l', () =>
-      this._activeBlockMoveOneRightStep()
-    );
-    this._registerKeyUpProcedure('Tab', () => this._switchActiveBlockToNext());
-  }
-
-  /** 响应 S 键和下箭头键 */
-  _handleSKeyUp(): void {
-    this._activeBlockMoveDownOneStep();
-  }
-
-  /** 响应 A 键和左箭头键 */
-  _handleAKeyUp(): void {
-    this._activeBlockMoveOneLeftStep();
-  }
-
-  /** 响应 D 键和右箭头键 */
-  _handleDKeyUp(): void {
-    this._activeBlockMoveOneRightStep();
-  }
-
-  /** 响应 W 键和上箭头键 */
-  _handleWKeyUp(): void {
-    this._rotate();
   }
 
   /** 顺时针 90 度旋转 */
@@ -148,11 +136,6 @@ export class TetrisDebugComponent {
 
     this.shapePattern.rotate(this._activeBlock, this.board);
     this._d3Update();
-  }
-
-  /** 注册按键响应回调 */
-  private _registerKeyUpProcedure(key: string, fn: () => void): void {
-    this._keyUpProcedure[key] = fn;
   }
 
   /** 刷新显示，也就是说让视图和数据同步，或者说就是把数据同步到视图上 */
@@ -170,14 +153,6 @@ export class TetrisDebugComponent {
     this._d3Update();
     this._activeBlock = block;
     this._blocks.push(block);
-  }
-
-  /** 为触发的 keyup 事件寻找响应例程并且执行 */
-  private _handleKeyUp(key: string): void {
-    const fn = this._keyUpProcedure[key];
-    if (fn !== undefined) {
-      fn();
-    }
   }
 
   /** 尝试将当前 activeBlock 向上移动一个单位，一般仅在 debug 模式进行此操作 */
@@ -238,10 +213,6 @@ export class TetrisDebugComponent {
       this._activeBlock.down();
       this._d3Update();
     }
-  }
-
-  ngOnDestroy(): void {
-    this._keyUpSubscription?.unsubscribe();
   }
 
   /** 响应鼠标点击 cell 事件 */

@@ -52,3 +52,7 @@ export type IGeometry = {
 
 /** 判断一个 block 周围是否有足够多多 gap */
 export type IFreeGapDetectOption = { block: Block; board: Board; gap: IGap };
+
+export type GameBoxControl<T> = {
+  [Property in T as `onGameBox${Capitalize<string & Property>}`]: () => void; 
+}; 
