@@ -4,7 +4,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ShapePatternDetectAndRotate } from './shape-pattern-detect-and-rotate';
 import { GridDisplayComponent } from './grid-display/grid-display.component';
-import { TetrisPlayComponent } from './tetris-play/tetris-play.component';
 import { ViewComponent } from './view/view.component';
 import { ShapeViewComponent } from './shape-view/shape-view.component';
 import { GithubOauthRedirectBackComponent } from './github-oauth-redirect-back/github-oauth-redirect-back.component';
@@ -23,7 +22,6 @@ import { TickSource, TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL 
   declarations: [
     AppComponent,
     GridDisplayComponent,
-    TetrisPlayComponent,
     ViewComponent,
     ShapeViewComponent,
     GithubOauthRedirectBackComponent,

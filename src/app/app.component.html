@@ -2,6 +2,14 @@
   <div><a [routerLink]="'tetris-play'">Play</a></div>
   <div><a [routerLink]="'tetris-debug'">Debug</a></div>
   <div><a [routerLink]="'tetris-blocks-view'">View</a></div>
+  <div><a href="https://github.com/hsiaofongw/tetris-d3-angular-demo" target="_blank">SourceCode</a></div>
+  <div><a href="https://github.com/hsiaofongw" target="_blank">AboutAuthor</a></div>
   <div *ngIf="loginRedirectTo"><a [href]="loginRedirectTo">Login</a></div>
 </div>
 <router-outlet></router-outlet>
+<div>
+  <div>keymaps:</div>
+  <img src="/assets/keymap.png" alt="" [height]="300" [width]="400">
+  <div>tips: click block to select active block</div>
+</div>
+<footer>Copyright (c) 2021 <a href="https://github.com/hsiaofongw" target="_blank">hsiaofongw</a></footer>
