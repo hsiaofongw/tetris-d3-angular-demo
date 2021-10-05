@@ -1,37 +1,45 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { GameBoxControl } from '../interfaces';
-import { KeyboardEventSource } from './keyboard-event-source.service';
 
 type GameBoxEventHandler = () => void;
 
 type AbstractGameBoxEventTable<T extends string> = {
   [Property in T]: GameBoxEventHandler[];
-}
+};
 
-export type GameBoxEvent = 'up' | 'rotate' | 'down' | 'left' | 'right' | 'reset' | 'new' | 'pause';
+export type GameBoxEvent =
+  | 'up'
+  | 'rotate'
+  | 'down'
+  | 'left'
+  | 'right'
+  | 'reset'
+  | 'new'
+  | 'pause'
+  | 'delete';
+
 type GameBoxEventTable = AbstractGameBoxEventTable<GameBoxEvent>;
 type KeyboardEventMap = Record<string, keyof GameBoxEventTable>;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GameBoxControlEventsDispatcher {
-
   private _pluggedGameBoxControls: GameBoxControl<any>[] = [];
 
   private readonly _keyboardEventMap: KeyboardEventMap = {
-    'w': 'rotate',
-    'a': 'left',
-    's': 'down',
-    'd': 'right',
+    w: 'rotate',
+    a: 'left',
+    s: 'down',
+    d: 'right',
     ' ': 'pause',
-    'k': 'up',
-    'r': 'reset',
-    'n': 'new',
-    'h': 'left',
-    'l': 'right',
-    'j': 'down',
+    k: 'up',
+    r: 'reset',
+    n: 'new',
+    h: 'left',
+    l: 'right',
+    j: 'down',
+    e: 'delete',
   };
 
   public plug<T>(control: GameBoxControl<T>): void {
@@ -39,7 +47,9 @@ export class GameBoxControlEventsDispatcher {
   }
 
   public unPlug(control: GameBoxControl<any>): void {
-    this._pluggedGameBoxControls = this._pluggedGameBoxControls.filter(_control => _control !== control);
+    this._pluggedGameBoxControls = this._pluggedGameBoxControls.filter(
+      (_control) => _control !== control
+    );
   }
 
   public dispatch(event: KeyboardEvent): void {
@@ -60,5 +70,4 @@ export class GameBoxControlEventsDispatcher {
       }
     }
   }
-
 }

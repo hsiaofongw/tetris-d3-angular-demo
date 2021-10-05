@@ -79,6 +79,14 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
   onGameBoxPause(): void {
   }
 
+  onGameBoxDelete(): void {
+    if (this._activeBlock) {
+      this.board.detachBlock(this._activeBlock);
+      this._blocks = this._blocks.filter(_block => _block !== this._activeBlock);
+      this._d3Update();
+    }
+  }
+
   /** 重置游戏状态 */
   _reset(): void {
     this._activeBlock = undefined;
