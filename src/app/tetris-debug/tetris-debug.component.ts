@@ -96,6 +96,10 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     this._fall();
   }
 
+  onGameBoxActiveBlockFall(): void {
+    this._activeBlockFall();
+  }
+
   /** 重置游戏状态 */
   _reset(): void {
     this._clearAllBlocks(() => {
@@ -146,6 +150,28 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
     });
 
     window.setTimeout(() => this._fall(), 0);
+  }
+
+  /** 让当前 activeBlock 自由落体 */
+  _activeBlockFall(): void {
+    if (!this._activeBlock) {
+      return;
+    }
+
+    const activeBlock = this._activeBlock;
+    if (
+      !this.barrierDetectService.canMove({
+        move: { direction: 'down', steps: 1 },
+        block: activeBlock,
+        board: this.board,
+      })
+    ) {
+      return;
+    }
+
+    activeBlock.down();
+    this._d3Update();
+    window.setTimeout(() => this._activeBlockFall(), 0);
   }
 
   /** 尝试消去整行的块 */
