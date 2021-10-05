@@ -2,9 +2,9 @@ import { Inject, Injectable, InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
 import { GameBoxControlEventsDispatcher } from './game-box-control-events-dispatcher.service';
 
-export const KEYBOARD_EVENT_OBSERVABLE = new InjectionToken<Observable<KeyboardEvent>>(
-  'KeyboardEvent$'
-);
+export const KEYBOARD_EVENT_OBSERVABLE = new InjectionToken<
+  Observable<KeyboardEvent>
+>('KeyboardEvent$');
 
 @Injectable()
 export class KeyboardEventSource {
@@ -17,7 +17,13 @@ export class KeyboardEventSource {
   private _pluggedEventDispatchers: GameBoxControlEventsDispatcher[] = [];
 
   public plug(dispatcher: GameBoxControlEventsDispatcher): void {
-    this._pluggedEventDispatchers.push(dispatcher);
+    if (
+      !this._pluggedEventDispatchers.find(
+        (_dispatcher) => _dispatcher === dispatcher
+      )
+    ) {
+      this._pluggedEventDispatchers.push(dispatcher);
+    }
   }
 
   public unPlug(dispatcher: GameBoxControlEventsDispatcher): void {

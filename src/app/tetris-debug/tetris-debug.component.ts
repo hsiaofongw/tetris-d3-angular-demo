@@ -162,10 +162,6 @@ export class TetrisDebugComponent implements GameBoxControl<GameBoxEvent> {
   ngOnInit(): void {
     this.eventSource.plug(this.eventDispatcher);
     this.eventDispatcher.plug<GameBoxEvent>(this);
-    window.console.log({
-      eventSource: this.eventSource,
-      dispatcher: this.eventDispatcher,
-    });
     this._reset();
   }
 

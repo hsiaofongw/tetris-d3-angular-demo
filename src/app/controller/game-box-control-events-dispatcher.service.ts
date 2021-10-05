@@ -41,11 +41,15 @@ export class GameBoxControlEventsDispatcher {
     l: 'right',
     j: 'down',
     e: 'delete',
-    f: 'fall'
+    f: 'fall',
   };
 
   public plug<T>(control: GameBoxControl<T>): void {
-    this._pluggedGameBoxControls.push(control);
+    if (
+      !this._pluggedGameBoxControls.find((_control) => _control === control)
+    ) {
+      this._pluggedGameBoxControls.push(control);
+    }
   }
 
   public unPlug(control: GameBoxControl<any>): void {
