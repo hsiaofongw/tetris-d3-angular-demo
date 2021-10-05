@@ -13,6 +13,7 @@ import { Cell } from './helpers/cell';
 import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module';
 import { TickGenerator } from './ticks/tick-generator';
 import { FastTickGenerator } from './ticks/fast-tick-generator';
+import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { FastTickGenerator } from './ticks/fast-tick-generator';
     ViewComponent,
     ShapeViewComponent,
     GithubOauthRedirectBackComponent,
+    TetrisDebugComponent,
   ],
   imports: [BrowserModule, AppRoutingModule, ShapePrototypesModule],
   providers: [

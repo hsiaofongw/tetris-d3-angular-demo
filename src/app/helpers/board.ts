@@ -32,7 +32,8 @@ export class Board implements IBoard {
   }
 
   /** 查询在一个给定位置是否有 cell 存在 */
-  @CachedQuery
+  // 暂时不使用装饰器
+  // @CachedQuery
   public queryCell(point: Point): Cell | undefined {
     for (const cell of this.cells) {
       if (cell.isOverlapWithPoint(point)) {
@@ -41,6 +42,21 @@ export class Board implements IBoard {
     }
 
     return undefined;
+  }
+
+  /** 在此棋盘中，对于一个给的多 block, 查询是否超出棋盘范围 */
+  public isOutOfRange(block: Block): boolean {
+    for (const cell of block.cells) {
+      if (cell.point.offsetX < 0 || cell.point.offsetX >= this.nCols) {
+        return true;
+      }
+
+      if (cell.point.offsetY < 0 || cell.point.offsetY >= this.nRows) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /** 在此棋盘中，对于一个给定的 block, 查询是否有其他 block 的 cell 与它重叠 */
@@ -74,4 +90,15 @@ export class Board implements IBoard {
 
     this.cellUpdate.next(this);
   }
+
+  /** 卸载一个 block (一般是临时卸载) */
+  public detachBlock(block: Block): void {
+    block.cells.forEach(cell => this.deleteCell(cell.id));
+  }
+
+  /** 加载一个 block */
+  public attachBlock(block: Block): void {
+    block.cells.forEach(cell => this.addCell(cell));
+  }
+
 }

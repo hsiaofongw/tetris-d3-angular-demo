@@ -1,0 +1,33 @@
+<div>
+  <span>得分：</span>
+  <span>{{ _scores }}</span>
+</div>
+<div class="grid-display-container">
+  <app-grid-display (onCellClick)="handleCellClick($event)" [cells]="_cells" [nRows]="nRows" [nCols]="nCols"></app-grid-display>
+</div>
+<div>
+  <div>
+    <span>w:</span>
+    <span>顺时针90度旋转当前活跃block</span>
+  </div>
+  <div>
+    <span>a:</span>
+    <span>左移一格当前活跃block</span>
+  </div>
+  <div>
+    <span>s:</span>
+    <span>下移一格当前活跃block</span>
+  </div>
+  <div>
+    <span>d:</span>
+    <span>右移一格当前活跃block</span>
+  </div>
+  <div>
+    <span>r:</span>
+    <span>复位</span>
+  </div>
+  <div>
+    <span>n:</span>
+    <span>生成一个新块</span>
+  </div>
+</div>
