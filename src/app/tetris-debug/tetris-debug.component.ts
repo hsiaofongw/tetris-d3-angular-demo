@@ -107,28 +107,28 @@ export class TetrisDebugComponent {
     this._registerKeyUpProcedure('n', () => this._addRandomBlockToScreen());
     this._registerKeyUpProcedure('k', () => this._activeBlockMoveUpStep());
     this._registerKeyUpProcedure('h', () =>
-      this._activeIBlockMoveOneLeftStep()
+      this._activeBlockMoveOneLeftStep()
     );
-    this._registerKeyUpProcedure('j', () => this._activeIBlockMoveOneStep());
+    this._registerKeyUpProcedure('j', () => this._activeBlockMoveDownOneStep());
     this._registerKeyUpProcedure('l', () =>
-      this._activeIBlockMoveOneRightStep()
+      this._activeBlockMoveOneRightStep()
     );
     this._registerKeyUpProcedure('Tab', () => this._switchActiveBlockToNext());
   }
 
   /** 响应 S 键和下箭头键 */
   _handleSKeyUp(): void {
-    this._activeIBlockMoveOneStep();
+    this._activeBlockMoveDownOneStep();
   }
 
   /** 响应 A 键和左箭头键 */
   _handleAKeyUp(): void {
-    this._activeIBlockMoveOneLeftStep();
+    this._activeBlockMoveOneLeftStep();
   }
 
   /** 响应 D 键和右箭头键 */
   _handleDKeyUp(): void {
-    this._activeIBlockMoveOneRightStep();
+    this._activeBlockMoveOneRightStep();
   }
 
   /** 响应 W 键和上箭头键 */
@@ -181,7 +181,7 @@ export class TetrisDebugComponent {
   }
 
   /** 尝试将当前 activeBlock 向上移动一个单位，一般仅在 debug 模式进行此操作 */
-  _activeBlockMoveUpStep(): void {
+  private _activeBlockMoveUpStep(): void {
     if (
       this._activeBlock &&
       this.barrierDetectService.canMove({
@@ -196,7 +196,7 @@ export class TetrisDebugComponent {
   }
 
   /** 尝试将当前 activeBlock 向左移动一个单位 */
-  _activeIBlockMoveOneLeftStep(): void {
+  private _activeBlockMoveOneLeftStep(): void {
     if (
       this._activeBlock &&
       this.barrierDetectService.canMove({
@@ -211,7 +211,7 @@ export class TetrisDebugComponent {
   }
 
   /** 尝试将当前 activeBlock 向右移动一个单位 */
-  _activeIBlockMoveOneRightStep(): void {
+  private _activeBlockMoveOneRightStep(): void {
     if (
       this._activeBlock &&
       this.barrierDetectService.canMove({
@@ -226,7 +226,7 @@ export class TetrisDebugComponent {
   }
 
   /** 尝试将当前 activeBlock 向下移动一个单位 */
-  _activeIBlockMoveOneStep(): void {
+  _activeBlockMoveDownOneStep(): void {
     if (
       this._activeBlock &&
       this.barrierDetectService.canMove({
