@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { BarrierDetectService } from './barrier-detect.service';
 import { Block } from './helpers/block';
 import { Board } from './helpers/board';
+import { Point } from './helpers/point';
 import { IBlock, IBoard, IGap, IPoint, IShape } from './interfaces';
 import {
   ShapePrototype,
@@ -144,22 +145,24 @@ export class ShapePatternDetectAndRotate {
 
   /** 判断一个 block 是否具备 rotate 的条件 */
   public canRotate(block: Block, board: Board): boolean {
+    const cantRotateBecause = (reason: string) => ({ rotate: { cant: { because: reason }}});
+
     const pattern = this.detectPattern(block.cells.map((cell) => cell.point));
 
     if (!pattern) {
-      window.console.log({ canRotate: 'No pattern detected' });
+      console.log(cantRotateBecause("Can't detect current pattern"));
       return false;
     }
 
     const gapRequire = this.gapRequres[pattern];
     if (!gapRequire) {
-      window.console.log({
-        canRotate: 'Cant figure it out how many gap required',
-      });
+      console.log(cantRotateBecause("Cant't figure out how many gaps needs"));
       return false;
     }
 
     if (!this.gapDetect(block, gapRequire, board)) {
+      console.log(cantRotateBecause("Don't have enough gap"));
+      console.log({gapRequire});
       return false;
     }
 
@@ -167,16 +170,21 @@ export class ShapePatternDetectAndRotate {
   }
 
   /** 进行 rotate */
-  public rotate(block: IBlock, board: IBoard): void {
+  public rotate(block: Block, board: Board): void {
+    const cantRotateBecause = (reason: string) => ({ rotate: { cant: { because: reason }}});
+
     const currentPattern = this.detectPattern(
       block.cells.map((cell) => cell.point)
     );
+
     if (!currentPattern) {
+      console.log(cantRotateBecause("Can't find current pattern"));
       return;
     }
 
     const rotateToPattern = this.rotateRules[currentPattern];
     if (!rotateToPattern) {
+      console.log(cantRotateBecause("Can't find target pattern"));
       return;
     }
 
@@ -184,6 +192,7 @@ export class ShapePatternDetectAndRotate {
       (shapeProto) => shapeProto.shapePrototypeId === rotateToPattern
     );
     if (!rotateToShape) {
+      console.log(cantRotateBecause("Can't find target shape proto"));
       return;
     }
 
@@ -191,6 +200,7 @@ export class ShapePatternDetectAndRotate {
       (shapeProto) => shapeProto.shapePrototypeId === currentPattern
     );
     if (!currentShape) {
+      console.log(cantRotateBecause("Can't find current shape proto"));
       return;
     }
 
@@ -209,9 +219,6 @@ export class ShapePatternDetectAndRotate {
       });
     }
 
-    for (let i = 0; i < deltas.length; i++) {
-      block.cells[i].point.offsetX += deltas[i].offsetX;
-      block.cells[i].point.offsetY += deltas[i].offsetY;
-    }
+    block.cells.forEach((cell, cellIdx) => cell.point = cell.point.add(Point.create(deltas[cellIdx])));
   }
 }
