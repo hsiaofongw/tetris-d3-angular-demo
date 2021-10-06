@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { JwtPersistenceService } from 'src/app/auth/services/jwt-persistence.service';
 import { UserService } from '../../services/user.service';
 
@@ -17,6 +18,7 @@ export class UserComponent implements OnInit {
   avatarUrl?: string;
   defaultAvatarUrl = '';
   username?: string;
+  githubHomePage?: string;
 
   constructor(
     private userService: UserService,
@@ -26,7 +28,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchProfile();
-    this.router.events.subscribe(() => this.fetchProfile());
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => this.fetchProfile());
   }
 
   fetchProfile(): void {
@@ -39,6 +41,7 @@ export class UserComponent implements OnInit {
       const profile = profileQueryResult.result;
       this.avatarUrl = profile.avatarUrl;
       this.username = profile.username;
+      this.githubHomePage = profile.userGitHubHomePage;
     });
   }
 
