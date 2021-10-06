@@ -13,10 +13,21 @@ import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module
 import { TickGenerator } from './ticks/tick-generator';
 import { FastTickGenerator } from './ticks/fast-tick-generator';
 import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
-import { KeyboardEventSource, KEYBOARD_EVENT_OBSERVABLE } from './controller/keyboard-event-source.service';
+import {
+  KeyboardEventSource,
+  KEYBOARD_EVENT_OBSERVABLE,
+} from './controller/keyboard-event-source.service';
 import { fromEvent, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { TickSource, TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL } from './tick-sources/tick-source.service';
+import {
+  TickSource,
+  TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL,
+} from './tick-sources/tick-source.service';
+import { HttpClientModule } from '@angular/common/http';
+import {
+  ApiConfig,
+  AUTH_API_CONFIG,
+} from './github-oauth-redirect-back/github-oauth.service';
 
 @NgModule({
   declarations: [
@@ -27,7 +38,12 @@ import { TickSource, TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL 
     GithubOauthRedirectBackComponent,
     TetrisDebugComponent,
   ],
-  imports: [BrowserModule, AppRoutingModule, ShapePrototypesModule],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    ShapePrototypesModule,
+    HttpClientModule,
+  ],
   providers: [
     ShapePatternDetectAndRotate,
     {
@@ -47,11 +63,17 @@ import { TickSource, TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL 
     },
     {
       provide: KeyboardEventSource,
-      useFactory: (event$: Observable<KeyboardEvent>) => new KeyboardEventSource(event$),
-      deps: [KEYBOARD_EVENT_OBSERVABLE]
+      useFactory: (event$: Observable<KeyboardEvent>) =>
+        new KeyboardEventSource(event$),
+      deps: [KEYBOARD_EVENT_OBSERVABLE],
     },
     {
-      provide: TICK_SOURCE_MINIMUM_INTERVAL, useValue: 500,
+      provide: TICK_SOURCE_MINIMUM_INTERVAL,
+      useValue: 500,
+    },
+    {
+      provide: AUTH_API_CONFIG,
+      useValue: { server: 'http://localhost:3000', path: '/token' } as ApiConfig,
     },
   ],
   bootstrap: [AppComponent],

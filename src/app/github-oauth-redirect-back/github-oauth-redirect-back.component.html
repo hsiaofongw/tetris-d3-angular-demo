@@ -1,7 +1,11 @@
-<ng-container *ngIf="!!code">
-  <!-- <div>
-    <span>code:</span>
-    <span>{{ code }}</span>
-  </div> -->
+<ng-container *ngIf="!whenJumpToHomePageTX">
   <div>正在登录...</div>
+</ng-container>
+
+<ng-container *ngIf="!!whenJumpToHomePageTX">
+  <div>登录成功</div>
+  <div *ngIf="!!secondsUntilJumpToHomePage">
+    <span>{{ secondsUntilJumpToHomePage }}</span>
+    <span>秒钟后跳转到首页</span>
+  </div>
 </ng-container>
