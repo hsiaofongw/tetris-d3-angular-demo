@@ -20,8 +20,8 @@ import { RouterModule } from '@angular/router';
     {
       provide: API_CONFIG,
       useValue: {
-        server: 'http://localhost:3000',
-        path: '/token',
+        server: '',
+        path: '/api/v1/token',
       } as ApiConfig,
     },
   ],

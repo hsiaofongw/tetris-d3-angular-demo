@@ -13,7 +13,6 @@ import { UserService } from '../../services/user.service';
 export class UserComponent implements OnInit {
   clientId = 'Iv1.ac6dbe5b3e366cf5';
   githubRequestAuthorizationBaseURL = 'https://github.com/login/oauth/authorize';
-  redirectUri = 'http://localhost:4200/github-oauth-redirect-back';
   
   avatarUrl?: string;
   defaultAvatarUrl = '';
@@ -54,7 +53,6 @@ export class UserComponent implements OnInit {
   logIn(): void {
     const githubURLObject = new URL(this.githubRequestAuthorizationBaseURL);
     githubURLObject.searchParams.append('client_id', this.clientId);
-    githubURLObject.searchParams.append('redirect_uri', this.redirectUri);
     const loginRedirectTo = githubURLObject.toString();
     window.open(loginRedirectTo, '_blank');
   }

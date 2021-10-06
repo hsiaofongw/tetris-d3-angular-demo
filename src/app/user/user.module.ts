@@ -13,7 +13,7 @@ import { RouterModule } from '@angular/router';
   providers: [
     {
       provide: API_CONFIG,
-      useValue: { server: 'http://localhost:3000', path: '/user' } as ApiConfig,
+      useValue: { server: '', path: '/api/v1/user' } as ApiConfig,
     },
     {
       provide: HTTP_INTERCEPTORS,
