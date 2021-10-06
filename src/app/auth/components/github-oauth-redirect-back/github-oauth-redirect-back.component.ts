@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, timer } from 'rxjs';
-import { AuthService } from './github-oauth.service';
-import { JwtQueryResult } from './interfaces';
-import { JwtPersistenceService } from './jwt-persistence.service';
+import { AuthService } from '../../services/github-oauth.service';
+import { JwtQueryResult } from '../../interfaces';
+import { JwtPersistenceService } from '../../services/jwt-persistence.service';
 
 @Component({
   selector: 'app-github-oauth-redirect-back',
@@ -24,7 +24,7 @@ export class GithubOauthRedirectBackComponent implements OnInit {
     private route: ActivatedRoute,
     private githubOAuthService: AuthService,
     private jwtPersistenceService: JwtPersistenceService,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -41,8 +41,9 @@ export class GithubOauthRedirectBackComponent implements OnInit {
         timer(this.waitUntilJumpSecs * 1000).subscribe(() => {
           this.router.navigate(['']);
         });
-        this.whenJumpToHomePageTX = (new Date().valueOf()) + this.waitUntilJumpSecs * 1000;
-        this.startCounting();       
+        this.whenJumpToHomePageTX =
+          new Date().valueOf() + this.waitUntilJumpSecs * 1000;
+        this.startCounting();
       }
     });
   }
@@ -64,7 +65,7 @@ export class GithubOauthRedirectBackComponent implements OnInit {
 
       this.calcSecondsUntilJumpToHomePage();
       window.setTimeout(() => counter(new Date().valueOf()), 0);
-    }
+    };
 
     counter(new Date().valueOf());
   }

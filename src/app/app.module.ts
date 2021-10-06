@@ -6,7 +6,6 @@ import { ShapePatternDetectAndRotate } from './shape-pattern-detect-and-rotate';
 import { GridDisplayComponent } from './grid-display/grid-display.component';
 import { ViewComponent } from './view/view.component';
 import { ShapeViewComponent } from './shape-view/shape-view.component';
-import { GithubOauthRedirectBackComponent } from './github-oauth-redirect-back/github-oauth-redirect-back.component';
 import { Board, GAME_BOARD } from './helpers/board';
 import { Cell } from './helpers/cell';
 import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module';
@@ -20,14 +19,11 @@ import {
 import { fromEvent, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import {
-  TickSource,
   TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL,
 } from './tick-sources/tick-source.service';
 import { HttpClientModule } from '@angular/common/http';
-import {
-  ApiConfig,
-  AUTH_API_CONFIG,
-} from './github-oauth-redirect-back/github-oauth.service';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 @NgModule({
   declarations: [
@@ -35,7 +31,6 @@ import {
     GridDisplayComponent,
     ViewComponent,
     ShapeViewComponent,
-    GithubOauthRedirectBackComponent,
     TetrisDebugComponent,
   ],
   imports: [
@@ -43,6 +38,7 @@ import {
     AppRoutingModule,
     ShapePrototypesModule,
     HttpClientModule,
+    UserModule,
   ],
   providers: [
     ShapePatternDetectAndRotate,
@@ -70,10 +66,6 @@ import {
     {
       provide: TICK_SOURCE_MINIMUM_INTERVAL,
       useValue: 500,
-    },
-    {
-      provide: AUTH_API_CONFIG,
-      useValue: { server: 'http://localhost:3000', path: '/token' } as ApiConfig,
     },
   ],
   bootstrap: [AppComponent],
