@@ -1,11 +1,11 @@
 {
   "name": "tetris-d3-angular-demo",
-  "version": "0.0.1",
+  "version": "1.2.0",
   "description": "用 d3 和 Angular 实现的俄罗斯方块 (demo)",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod --optimization --delete-output-path",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
