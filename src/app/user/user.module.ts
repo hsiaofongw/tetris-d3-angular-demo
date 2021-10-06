@@ -5,10 +5,11 @@ import { AuthBearerInterceptor } from './interceptors/auth-bearer.interceptor';
 import { UserComponent } from './components/user/user.component';
 import { UserService } from './services/user.service';
 import { ApiConfig, API_CONFIG } from './config';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [UserComponent],
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, RouterModule.forChild([])],
   providers: [
     {
       provide: API_CONFIG,

@@ -12,7 +12,6 @@ export class UserService {
   ) {}
 
   getProfile(): Observable<UserProfileQueryResult> {
-    console.log({ profile: { apiConfig: this.apiConfig } });
     const fullPath = this.apiConfig.server + this.apiConfig.path;
     return this.httpClient.get<UserProfileQueryResult>(fullPath);
   }

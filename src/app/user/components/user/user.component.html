@@ -1,1 +1,10 @@
-<p>user works!</p>
+<div class="user">
+<img class="avatar" width="50" height="50" *ngIf="avatarUrl" [src]="avatarUrl" alt="user avatar">
+<div *ngIf="username" class="username">{{ username }}</div>
+<ng-container *ngIf="!username">
+  <button (click)="logIn()">LogIn</button>
+</ng-container>
+<ng-container *ngIf="username">
+  <button (click)="logOut()">LogOut</button>
+</ng-container>
+</div>
