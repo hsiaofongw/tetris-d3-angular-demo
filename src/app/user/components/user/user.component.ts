@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { JwtPersistenceService } from 'src/app/auth/services/jwt-persistence.service';
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -7,11 +8,18 @@ import { UserService } from '../../services/user.service';
   styleUrls: ['./user.component.scss'],
 })
 export class UserComponent implements OnInit {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private jwtPersistence: JwtPersistenceService
+  ) {}
 
   ngOnInit(): void {
-    this.userService.getProfile().subscribe((profile) => {
-      console.log({ profile });
+    this.userService.getProfile().subscribe((profileQueryResult) => {
+      if (profileQueryResult.error) {
+        this.jwtPersistence.clear();
+      }
+
+      console.log({ profileQueryResult });
     });
   }
 }

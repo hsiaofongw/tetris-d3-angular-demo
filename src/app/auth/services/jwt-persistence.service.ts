@@ -9,4 +9,8 @@ export class JwtPersistenceService {
   public write(jwt: string): void {
     window.localStorage.setItem('jwt', jwt);
   }
+
+  public clear(): void {
+    window.localStorage.removeItem('jwt');
+  }
 }

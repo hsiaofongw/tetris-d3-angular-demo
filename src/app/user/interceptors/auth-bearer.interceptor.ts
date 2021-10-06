@@ -6,16 +6,22 @@ import {
   HttpInterceptor,
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { JwtPersistenceService } from 'src/app/auth/services/jwt-persistence.service';
 
 @Injectable()
 export class AuthBearerInterceptor implements HttpInterceptor {
-  constructor() {}
+  constructor(private jwtPersistence: JwtPersistenceService) {}
 
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    console.log({ test: AuthBearerInterceptor.name });
-    return next.handle(request);
+    const authToken = this.jwtPersistence.read();
+
+    const authReq = request.clone({
+      headers: request.headers.set('Authorization', `Bearer ${authToken}`),
+    });
+
+    return next.handle(authReq);
   }
 }
