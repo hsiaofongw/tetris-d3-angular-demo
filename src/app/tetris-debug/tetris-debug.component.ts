@@ -183,26 +183,33 @@ export class TetrisDebugComponent
 
   /** 尝试消去整行的块 */
   _tryEliminate(): void {
+    let targetCells: Cell[] = [];
     for (let rowIdx = 0; rowIdx < this.nRows; rowIdx++) {
       const cells = this.board.cells.filter(
         (cell) => cell.point.offsetY === rowIdx
       );
-      if (cells.length === this.nCols) {
-        cells.forEach((cell) => {
-          this.board.deleteCell(cell.id);
-          this._blocks.forEach((_block) => _block.deleteCell(cell.id));
-        });
-        this._d3Update();
-        this._scores += this.nCols;
 
-        this.board.cells
-          .filter((cell) => cell.point.offsetY < rowIdx)
-          .forEach((cell) => cell.down());
-        this._d3Update();
+      if (cells.length === this.nCols) {
+        targetCells = cells;
+        break;
       }
     }
 
-    this._prune();
+    if (targetCells.length) {
+      targetCells.forEach((cell) => {
+        this.board.deleteCell(cell.id);
+        this._blocks.forEach((_block) => _block.deleteCell(cell.id));
+      });
+      this._d3Update();
+      this._scores += this.nCols;
+      this.board.cells
+          .filter((cell) => cell.point.offsetY < targetCells[0].point.offsetY)
+          .forEach((cell) => cell.down());
+      this._d3Update();
+      this._prune();
+
+      window.setTimeout(() => this._tryEliminate(), 0);
+    }
   }
 
   ngOnInit(): void {
