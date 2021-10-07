@@ -42,6 +42,19 @@ jobs:
           
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      - name: Send Receipt to Telegram Group
+        uses: appleboy/telegram-action@v0.1.1
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Image is built.
+
+            Repository: ${{ github.repository }}
+            ImageTag: ghcr.io/${{ github.repository_owner }}/tetris-frontend:${{ steps.get_tag_name.outputs.tag_name }}
+            CommitSha1: ${{ github.sha }}
+            ImageDigest: ${{ steps.docker_build.outputs.digest }}
       
       - name: Cache Docker layers
         uses: actions/cache@v2
