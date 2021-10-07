@@ -11,6 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Send Initiation to Telegram Group
+        uses: appleboy/telegram-action@v0.1.1
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            CI procedure initiated.
+
+            Repository: ${{ github.repository }}
+            CommitSha1: ${{ github.sha }}
+            GitRef: ${{ github.ref }}
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -49,6 +61,7 @@ jobs:
             ImageTag: ghcr.io/${{ github.repository_owner }}/tetris-frontend:latest
             CommitSha1: ${{ github.sha }}
             ImageDigest: ${{ steps.docker_build.outputs.digest }}
+            GitRef: ${{ github.ref }}
 
       - name: Cache Docker layers
         uses: actions/cache@v2
