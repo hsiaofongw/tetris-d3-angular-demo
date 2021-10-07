@@ -10,11 +10,14 @@ jobs:
     
     steps:
     
-    - name: Telegram Message Notify
+    - name: Send Receipt to Telegram Group
       uses: appleboy/telegram-action@v0.1.1
       with:
         to: ${{ secrets.TELEGRAM_TO }}
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          The ${{ github.event_name }} event triggered final step.
-          echo This event is a pull request that had an assignee removed.
+          镜像构建完成
+
+          镜像标签: 1
+          CommitSha1: 2
+          ImageDigest: 3
