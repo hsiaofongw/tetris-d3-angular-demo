@@ -1,0 +1,10 @@
+<div>
+  <span>得分：</span>
+  <span>{{ _scores }}</span>
+</div>
+<div class="grid-display-container">
+  <app-grid-display
+    (onCellClick)="handleCellClick($event)"
+    [board]="board"
+  ></app-grid-display>
+</div>

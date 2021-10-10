@@ -18,18 +18,34 @@ import {
   SHAPE_PROTOTYPES,
 } from '../shape-prototypes/shape-prototype';
 import { RespondToTick, TickSource } from '../tick-sources/tick-source.service';
+import { ScoreUpdateHook, SCORE_UPDATE_HOOKS } from '../update-hooks/types';
 
 @Component({
-  selector: 'app-tetris-debug',
-  templateUrl: './tetris-debug.component.html',
-  styleUrls: ['./tetris-debug.component.scss'],
+  selector: 'app-tetris',
+  templateUrl: './tetris.component.html',
+  styleUrls: ['./tetris.component.scss'],
 })
-export class TetrisDebugComponent
+export class TetrisComponent
   implements GameBoxControl<GameBoxEvent>, RespondToTick
 {
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
-  _scores = 0;
+  __scores = 0;
+
+  set _scores(newScore: number) {
+    this.__scores = newScore;
+    this.scoreUpdateHooks.forEach((scoreUpdateHook) =>
+      scoreUpdateHook.triggerWithUpdate({
+        updateType: 'scoreUpdate',
+        payload: newScore,
+      })
+    );
+  }
+
+  get _scores(): number {
+    return this.__scores;
+  }
+
   _activeBlock?: Block;
   _keyUpSubscription?: Subscription;
   _keyUpProcedure: { [key: string]: () => void } = {};
@@ -49,7 +65,8 @@ export class TetrisDebugComponent
 
   constructor(
     @Inject(SHAPE_PROTOTYPES) private shapeProtos: ShapePrototype[],
-    @Inject(GAME_BOARD) private board: Board,
+    @Inject(GAME_BOARD) public board: Board,
+    @Inject(SCORE_UPDATE_HOOKS) private scoreUpdateHooks: ScoreUpdateHook[],
     private shapePattern: ShapePatternDetectAndRotate,
     private barrierDetectService: BarrierDetectService,
     private eventSource: KeyboardEventSource,
@@ -95,6 +112,7 @@ export class TetrisDebugComponent
       this._blocks = this._blocks.filter(
         (_block) => _block !== this._activeBlock
       );
+      this._activeBlock = undefined;
       this._d3Update();
     }
   }
@@ -203,8 +221,8 @@ export class TetrisDebugComponent
       this._d3Update();
       this._scores += this.nCols;
       this.board.cells
-          .filter((cell) => cell.point.offsetY < targetCells[0].point.offsetY)
-          .forEach((cell) => cell.down());
+        .filter((cell) => cell.point.offsetY < targetCells[0].point.offsetY)
+        .forEach((cell) => cell.down());
       this._d3Update();
       this._prune();
 
@@ -222,7 +240,7 @@ export class TetrisDebugComponent
 
   /** 屏蔽特定功能按键 */
   _muteSpecialKeys(): void {
-    fromEvent(window.document, 'keydown').subscribe(e => {
+    fromEvent(window.document, 'keydown').subscribe((e) => {
       if (e instanceof KeyboardEvent) {
         const keysToMute = new Set<string>();
         keysToMute.add(' ');
@@ -253,7 +271,6 @@ export class TetrisDebugComponent
   tick(): Promise<void> {
     return new Promise((resolve) => {
       const todo = () => {
-        
         if (this._isPaused) {
           window.setTimeout(() => todo(), 0);
           return;
@@ -264,7 +281,7 @@ export class TetrisDebugComponent
           resolve();
           return;
         }
-  
+
         const activeBlock = this._activeBlock;
         const canMove = this.barrierDetectService.canMove({
           move: { direction: 'down', steps: 1 },
@@ -277,7 +294,7 @@ export class TetrisDebugComponent
           resolve();
           return;
         }
-  
+
         this._activeBlock = undefined;
         this._tryEliminate();
         resolve();

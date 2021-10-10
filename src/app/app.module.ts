@@ -11,19 +11,18 @@ import { Cell } from './helpers/cell';
 import { ShapePrototypesModule } from './shape-prototypes/shape-prototype.module';
 import { TickGenerator } from './ticks/tick-generator';
 import { FastTickGenerator } from './ticks/fast-tick-generator';
-import { TetrisDebugComponent } from './tetris-debug/tetris-debug.component';
+import { TetrisComponent } from './tetris/tetris.component';
 import {
   KeyboardEventSource,
   KEYBOARD_EVENT_OBSERVABLE,
 } from './controller/keyboard-event-source.service';
 import { fromEvent, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import {
-  TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL,
-} from './tick-sources/tick-source.service';
+import { TICK_SOURCE_MINIMUM_SOURCE as TICK_SOURCE_MINIMUM_INTERVAL } from './tick-sources/tick-source.service';
 import { HttpClientModule } from '@angular/common/http';
 import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
+import { GlobalInterceptorsModule } from './global-interceptors/global-interceptors.module';
+import { UpdateHookModule } from './update-hooks/update-hooks.module';
 
 @NgModule({
   declarations: [
@@ -31,7 +30,7 @@ import { AuthModule } from './auth/auth.module';
     GridDisplayComponent,
     ViewComponent,
     ShapeViewComponent,
-    TetrisDebugComponent,
+    TetrisComponent,
   ],
   imports: [
     BrowserModule,
@@ -39,6 +38,8 @@ import { AuthModule } from './auth/auth.module';
     ShapePrototypesModule,
     HttpClientModule,
     UserModule,
+    GlobalInterceptorsModule,
+    UpdateHookModule,
   ],
   providers: [
     ShapePatternDetectAndRotate,
