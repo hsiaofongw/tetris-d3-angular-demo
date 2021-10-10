@@ -30,22 +30,7 @@ export class TetrisComponent
 {
   @ViewChild(GridDisplayComponent) gridDisplay!: GridDisplayComponent;
 
-  __scores = 0;
-
-  set _scores(newScore: number) {
-    this.__scores = newScore;
-    this.scoreUpdateHooks.forEach((scoreUpdateHook) =>
-      scoreUpdateHook.triggerWithUpdate({
-        updateType: 'scoreUpdate',
-        payload: newScore,
-        timestamp: new Date().valueOf(),
-      })
-    );
-  }
-
-  get _scores(): number {
-    return this.__scores;
-  }
+  _scores = 0;
 
   _activeBlock?: Block;
   _keyUpSubscription?: Subscription;
@@ -74,6 +59,17 @@ export class TetrisComponent
     private eventDispatcher: GameBoxControlEventsDispatcher,
     private tickSource: TickSource
   ) {}
+
+  updateScore(newScore: number): void {
+    this._scores = newScore;
+    this.scoreUpdateHooks.forEach((scoreUpdateHook) =>
+      scoreUpdateHook.triggerWithUpdate({
+        updateType: 'scoreUpdate',
+        payload: newScore,
+        timestamp: new Date().valueOf(),
+      })
+    );
+  }
 
   onGameBoxUp(): void {
     this._activeBlockMoveUpStep();
@@ -220,7 +216,7 @@ export class TetrisComponent
         this._blocks.forEach((_block) => _block.deleteCell(cell.id));
       });
       this._d3Update();
-      this._scores += this.nCols;
+      this.updateScore(this._scores + this.nCols);
       this.board.cells
         .filter((cell) => cell.point.offsetY < targetCells[0].point.offsetY)
         .forEach((cell) => cell.down());

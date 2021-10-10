@@ -2,6 +2,7 @@
   <span>得分：</span>
   <span>{{ _scores }}</span>
 </div>
+<div><button (click)="updateScore(_scores)">更新分数</button></div>
 <div class="grid-display-container">
   <app-grid-display
     (onCellClick)="handleCellClick($event)"
