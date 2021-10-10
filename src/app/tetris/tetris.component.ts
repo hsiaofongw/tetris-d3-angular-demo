@@ -38,6 +38,7 @@ export class TetrisComponent
       scoreUpdateHook.triggerWithUpdate({
         updateType: 'scoreUpdate',
         payload: newScore,
+        timestamp: new Date().valueOf(),
       })
     );
   }

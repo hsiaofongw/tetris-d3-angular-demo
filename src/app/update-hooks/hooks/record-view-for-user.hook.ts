@@ -7,6 +7,13 @@ export class CollectViewStateForUser implements ViewUpdateHook {
   constructor(private httpClient: HttpClient) {}
 
   triggerWithUpdate(viewUpdate: ViewUpdate): void {
-    console.log({ viewUpdate });
+    // console.log('call');
+
+    // this.httpClient
+    //   .post('/api/v1/game-log/view', {
+    //     board: viewUpdate.payload,
+    //     timestamp: viewUpdate.timestamp,
+    //   })
+    //   .subscribe((res) => console.log({ res }));
   }
 }

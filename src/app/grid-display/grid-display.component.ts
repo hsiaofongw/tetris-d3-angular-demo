@@ -3,7 +3,6 @@ import {
   ElementRef,
   EventEmitter,
   Inject,
-  InjectionToken,
   Input,
   OnInit,
   Output,
@@ -12,7 +11,6 @@ import {
 import * as d3 from 'd3';
 import { Board } from '../helpers/board';
 import { Cell } from '../helpers/cell';
-import { IBoard, ICell } from '../interfaces';
 import { ViewUpdateHook, VIEW_UPDATE_HOOKS } from '../update-hooks/types';
 
 @Component({
@@ -56,6 +54,7 @@ export class GridDisplayComponent implements OnInit {
       updateHook.triggerWithUpdate({
         updateType: 'viewUpdate',
         payload: board,
+        timestamp: new Date().valueOf(),
       })
     );
 

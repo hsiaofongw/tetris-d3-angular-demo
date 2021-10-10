@@ -7,6 +7,9 @@ export class RecordScoreForUser implements ScoreUpdateHook {
   constructor(private httpClient: HttpClient) {}
 
   triggerWithUpdate(scoreUpdate: ScoreUpdate): void {
-    console.log({ scoreUpdate });
+    this.httpClient.post('/api/v1/game-log/score', {
+      timestamp: scoreUpdate.timestamp,
+      score: scoreUpdate.payload,
+    });
   }
 }

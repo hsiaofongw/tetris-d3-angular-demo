@@ -2,8 +2,8 @@ import { InjectionToken } from '@angular/core';
 import { IBoard } from '../interfaces';
 
 export type IScore = number;
-export type ViewUpdate = { updateType: 'viewUpdate'; payload: IBoard };
-export type ScoreUpdate = { updateType: 'scoreUpdate'; payload: IScore };
+export type ViewUpdate = { updateType: 'viewUpdate'; payload: IBoard, timestamp: number };
+export type ScoreUpdate = { updateType: 'scoreUpdate'; payload: IScore, timestamp: number };
 export type Update = ViewUpdate | ScoreUpdate;
 export type UpdateType = Update['updateType'];
 
