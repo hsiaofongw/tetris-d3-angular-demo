@@ -7,7 +7,8 @@
     "start": "ng serve",
     "build": "ng build --prod --optimization --delete-output-path",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "start:dev": "ng serve --host 0.0.0.0 --port 4200"
   },
   "private": true,
   "dependencies": {
