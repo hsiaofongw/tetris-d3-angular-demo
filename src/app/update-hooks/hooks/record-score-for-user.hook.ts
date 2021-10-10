@@ -10,6 +10,6 @@ export class RecordScoreForUser implements ScoreUpdateHook {
     this.httpClient.post('/api/v1/game-log/score', {
       timestamp: scoreUpdate.timestamp,
       score: scoreUpdate.payload,
-    });
+    }).subscribe();
   }
 }
